@@ -12,18 +12,15 @@ Devvit.addCustomPostType({
   name: "SkillSeeker Experience",
   height: "regular",
   render: (_context) => {
-    const [screen, setScreen] = useState<"welcome" | "challenge">("welcome");
-    const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+    const [screen, setScreen] = useState<"welcome" | "challenge">("challenge");
+    const [currentQuestionIndex] = useState(0);
+    const [message, setMessage] = useState("");
 
     function handleAnswer(selectedAnswer: string) {
       if (selectedAnswer === questions[currentQuestionIndex].correct) {
-        if (currentQuestionIndex + 1 < questions.length) {
-          setCurrentQuestionIndex(currentQuestionIndex + 1);
-        } else {
-          // TODO: Winning the game
-        }
+        setMessage("✅ Correct! To proceed, find a physicist.");
       } else {
-        // TODO: Incorrect answer (eg show message)
+        setMessage("❌ Wrong answer. Try again!");
       }
     }
 
@@ -34,6 +31,7 @@ Devvit.addCustomPostType({
         question={questions[currentQuestionIndex].question}
         answers={questions[currentQuestionIndex].answers}
         onAnswer={handleAnswer}
+        message={message}
       />
     );
   },
