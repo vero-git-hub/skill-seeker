@@ -6,7 +6,8 @@ export function useCommentMonitor(
   postId: string,
   reddit: RedditAPIClient,
   setSpecialists: (value: { [key: string]: string }) => void,
-  sendToChannel: (data: { type: string; user: string; profession: string }) => void
+  sendToChannel: (data: { type: string; user: string; profession: string }) => void,
+  stopMonitoring: () => void
 ) {
   async function fetchComments() {
     console.log("🔄 Checking for new specialist join requests...");
@@ -20,7 +21,18 @@ export function useCommentMonitor(
           const userName = await getUserName(reddit, userId);
           console.log(`🛠️ ${userName} joined as a ${profession}`);
 
-          setSpecialists((prev) => ({ ...prev, [userName]: profession }));
+          setSpecialists((prev) => {
+            const updatedSpecialists = { ...prev, [userName]: profession };
+            
+            if (Object.keys(updatedSpecialists).length > 0) {
+              console.log("⏹️ Specialist found, stopping monitoring.");
+              stopMonitoring();
+              interval.stop();
+            }
+
+            return updatedSpecialists;
+          });
+
           sendToChannel({ type: "join", user: userName, profession: profession });
         }
       }
