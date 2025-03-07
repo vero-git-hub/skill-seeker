@@ -1,8 +1,9 @@
 // main.tsx
-import { Devvit, useState, useChannel, RedditAPIClient } from "@devvit/public-api";
+import { Devvit, useState, useChannel } from "@devvit/public-api";
 import { WelcomePage } from "@pages/WelcomePage.js";
 import { QuestionPage } from "@pages/QuestionPage.js";
 import { questions } from "@utils/questions.js";
+import { checkComments } from "@utils/comments.js";
 
 Devvit.configure({
   redditAPI: true,
@@ -39,62 +40,12 @@ Devvit.addCustomPostType({
 
     channel.subscribe();
   
-    async function getUserName(reddit: RedditAPIClient, authorId: string): Promise<string> {
-      try {
-        const user = await reddit.getUserById(authorId);
-    
-        if (!user) {
-          console.warn(`⚠️ User with ID ${authorId} not found.`);
-          return "Unknown";
-        }
-    
-        console.log("🔍 Fetched user:", user);
-    
-        return user.username ?? "Unknown";
-      } catch (error) {
-        console.error("❌ Error fetching username:", error);
-        return "Unknown";
-      }
-    }    
-
-    async function checkComments(postId: string) {
-      try {
-        const commentsListing = await reddit.getComments({ postId });
-
-        for await (const comment of commentsListing) {
-          if (comment.body.startsWith("!join ")) {
-            const profession = comment.body.split("!join ")[1].trim();
-            if (profession) {
-              const userId = comment.authorId ?? "";
-              if (!userId) {
-                console.warn("⚠️ Warning: Comment has no valid authorId.");
-                continue;
-              }
-
-              const userName = await getUserName(reddit, userId);
-
-              console.log(`🛠️ ${userName} joined as a ${profession}`);
-              setSpecialists((prev) => ({ ...prev, [userName]: profession }));
-
-              channel.send({
-                type: "join",
-                user: userName,
-                profession: profession,
-              });
-            }
-          }
-        }
-      } catch (error) {
-        console.error("❌ Error while retrieving comments:", error);
-      }
-    }
-
     function handleAnswer(selectedAnswer: string) {
       if (selectedAnswer === questions[currentQuestionIndex].correct) {
         setMessage("✅ Correct! To proceed, find a physicist.");
 
         if (postId) {
-          checkComments(postId);
+          checkComments(postId, reddit, specialists, setSpecialists, (data) => channel.send(data));
         }
       } else {
         setMessage("❌ Wrong answer. Try again!");
