@@ -37,8 +37,8 @@ Devvit.addCustomPostType({
 
     channel.subscribe();
 
-    if (monitoring) {
-      useCommentMonitor(postId, reddit, setSpecialists, (data) => channel.send(data), () => setMonitoring(false));
+    if (monitoring && postId) {
+      useCommentMonitor(postId, reddit, specialists, setSpecialists, (data) => channel.send(data), () => setMonitoring(false));
     }
 
     function handleAnswer(selectedAnswer: string) {
