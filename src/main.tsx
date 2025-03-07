@@ -37,12 +37,19 @@ Devvit.addCustomPostType({
 
     channel.subscribe();
 
-    if (monitoring && postId) {
-      const requiredSpecialist = questions[currentQuestionIndex+1]?.requiredSpecialist || "a specialist";
-      console.log(`🔍 main.tsx: Looking for ${requiredSpecialist}...`);
+    const safePostId = postId ?? "";
 
-      useCommentMonitor(postId, reddit, specialists, setSpecialists, (data) => channel.send(data), () => setMonitoring(false), requiredSpecialist);
-    }
+    const requiredSpecialist = questions[currentQuestionIndex + 1]?.requiredSpecialist || "a specialist";
+    useCommentMonitor(
+      monitoring,
+      safePostId,
+      reddit,
+      specialists,
+      setSpecialists,
+      (data) => channel.send(data),
+      () => setMonitoring(false),
+      requiredSpecialist
+    );
 
     function handleAnswer(selectedAnswer: string) {
       if (selectedAnswer === questions[currentQuestionIndex].correct) {

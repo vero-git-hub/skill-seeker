@@ -3,6 +3,7 @@ import { RedditAPIClient, useInterval } from "@devvit/public-api";
 import { getUserName } from "./users.js";
 
 export function useCommentMonitor(
+  monitoring: boolean,
   postId: string,
   reddit: RedditAPIClient,
   specialists: { [key: string]: string },
@@ -12,6 +13,8 @@ export function useCommentMonitor(
   requiredSpecialist: string
 ) {
   async function fetchComments() {
+    if (!monitoring) return;
+
     console.log(`🔄 comments.ts: Checking for a specialist: ${requiredSpecialist}...`);
     const commentsListing = await reddit.getComments({ postId });
 
