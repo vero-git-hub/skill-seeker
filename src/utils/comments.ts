@@ -8,10 +8,11 @@ export function useCommentMonitor(
   specialists: { [key: string]: string },
   setSpecialists: (value: { [key: string]: string }) => void,
   sendToChannel: (data: { type: string; user: string; profession: string }) => void,
-  stopMonitoring: () => void
+  stopMonitoring: () => void,
+  requiredSpecialist: string
 ) {
   async function fetchComments() {
-    console.log("🔄 Checking for new specialist join requests...");
+    console.log(`🔄 comments.ts: Checking for a specialist: ${requiredSpecialist}...`);
     const commentsListing = await reddit.getComments({ postId });
 
     for await (const comment of commentsListing) {
@@ -22,16 +23,17 @@ export function useCommentMonitor(
           const userName = await getUserName(reddit, userId);
           console.log(`🛠️ ${userName} joined as a ${profession}`);
 
-          const updatedSpecialists = { ...specialists, [userName]: profession };
-          
-          if (Object.keys(updatedSpecialists).length > 0) {
-            console.log("⏹️ Specialist found, stopping monitoring.");
+          if (profession.toLowerCase() === requiredSpecialist.toLowerCase()) {
+            console.log(`✅ ${userName} is a ${profession}! Stopping monitor.`);
             stopMonitoring();
             interval.stop();
+          } else {
+            console.log(`⚠️ ${userName} joined as ${profession}, but we need a ${requiredSpecialist}.`);
           }
 
+          const updatedSpecialists = { ...specialists, [userName]: profession };
           setSpecialists(updatedSpecialists);
-          
+
           sendToChannel({ type: "join", user: userName, profession: profession });
         }
       }

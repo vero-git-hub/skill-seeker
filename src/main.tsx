@@ -38,7 +38,10 @@ Devvit.addCustomPostType({
     channel.subscribe();
 
     if (monitoring && postId) {
-      useCommentMonitor(postId, reddit, specialists, setSpecialists, (data) => channel.send(data), () => setMonitoring(false));
+      const requiredSpecialist = questions[currentQuestionIndex+1]?.requiredSpecialist || "a specialist";
+      console.log(`🔍 main.tsx: Looking for ${requiredSpecialist}...`);
+
+      useCommentMonitor(postId, reddit, specialists, setSpecialists, (data) => channel.send(data), () => setMonitoring(false), requiredSpecialist);
     }
 
     function handleAnswer(selectedAnswer: string) {
