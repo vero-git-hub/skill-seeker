@@ -19,6 +19,7 @@ Devvit.addCustomPostType({
     const [message, setMessage] = useState("");
     const [specialists, setSpecialists] = useState<{ [key: string]: string }>({});
     const [monitoring, setMonitoring] = useState(false);
+    const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
 
     const channel = useChannel({
       name: "join_requests",
@@ -41,9 +42,16 @@ Devvit.addCustomPostType({
     }
 
     function handleAnswer(selectedAnswer: string) {
-      if (selectedAnswer === questions[0].correct) {
-        setMessage("✅ Correct! To proceed, find a physicist.");
-        setMonitoring(true);
+      if (selectedAnswer === questions[currentQuestionIndex].correct) {
+        const nextQuestionIndex = currentQuestionIndex + 1;
+
+        if (nextQuestionIndex < questions.length) {
+          const requiredSpecialist = questions[nextQuestionIndex]?.requiredSpecialist || "a specialist";
+          setMessage(`✅ Correct! To proceed, find ${requiredSpecialist}.`);
+          setMonitoring(true);
+        } else {
+          setMessage("🎉 Congratulations! You've completed the challenge.");
+        } 
       } else {
         setMessage("❌ Wrong answer. Try again!");
       }
@@ -53,8 +61,8 @@ Devvit.addCustomPostType({
       <WelcomePage onStartGame={() => setScreen("challenge")} />
     ) : (
       <QuestionPage
-        question={questions[0].question}
-        answers={questions[0].answers}
+        question={questions[currentQuestionIndex].question}
+        answers={questions[currentQuestionIndex].answers}
         onAnswer={handleAnswer}
         message={message}
       />
