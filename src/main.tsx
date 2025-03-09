@@ -22,6 +22,7 @@ Devvit.addCustomPostType({
     const [monitoring, setMonitoring] = useState(false);
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     const [joinedSpecialist, setJoinedSpecialist] = useState<{ user: string; profession: string } | null>(null);
+    const [waitingForSpecialist, setWaitingForSpecialist] = useState(false);
 
     const channel = useChannel({
       name: "join_requests",
@@ -40,11 +41,11 @@ Devvit.addCustomPostType({
     channel.subscribe();
 
     const safePostId = postId ?? "";
-
     const requiredSpecialist = questions[currentQuestionIndex + 1]?.requiredSpecialist || "a specialist";
 
     function handleSpecialistFound(user: string, profession: string) {
       setMonitoring(false);
+      setWaitingForSpecialist(false);
       setJoinedSpecialist({ user, profession });
       setScreen("specialist_joined");
     }
@@ -68,6 +69,7 @@ Devvit.addCustomPostType({
           const requiredSpecialist = questions[nextQuestionIndex]?.requiredSpecialist || "a specialist";
           setMessage(`✅ Correct! To proceed, find ${requiredSpecialist}.`);
           setMonitoring(true);
+          setWaitingForSpecialist(true);
         } else {
           setMessage("🎉 Congratulations! You've completed the challenge.");
         } 
@@ -76,13 +78,19 @@ Devvit.addCustomPostType({
       }
     }
 
+    function handleContinue() {
+      setScreen("challenge");
+      setMessage("");
+      setCurrentQuestionIndex((prev) => prev + 1);
+    }
+
     return screen === "welcome" ? (
       <WelcomePage onStartGame={() => setScreen("challenge")} />
     ) : screen === "specialist_joined" ? (
       <SpecialistJoinedPage 
         joinedSpecialist={joinedSpecialist} 
         specialists={specialists} 
-        onContinue={() => setScreen("challenge")} 
+        onContinue={handleContinue}
       />
     ) : (
       <QuestionPage
