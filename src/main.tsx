@@ -2,6 +2,7 @@
 import { Devvit, useState, useChannel } from "@devvit/public-api";
 import { WelcomePage } from "@pages/WelcomePage.js";
 import { QuestionPage } from "@pages/QuestionPage.js";
+import { SpecialistJoinedPage } from "@pages/SpecialistJoinedPage.js";
 import { questions } from "@utils/questions.js";
 import { useCommentMonitor } from "@utils/comments.js";
 
@@ -15,11 +16,12 @@ Devvit.addCustomPostType({
   height: "regular",
   render: (context) => {
     const { reddit, postId } = context;
-    const [screen, setScreen] = useState<"welcome" | "challenge">("challenge");
+    const [screen, setScreen] = useState<"welcome" | "challenge" | "specialist_joined">("challenge");
     const [message, setMessage] = useState("");
     const [specialists, setSpecialists] = useState<{ [key: string]: string }>({});
     const [monitoring, setMonitoring] = useState(false);
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+    const [joinedSpecialist, setJoinedSpecialist] = useState<{ user: string; profession: string } | null>(null);
 
     const channel = useChannel({
       name: "join_requests",
@@ -40,6 +42,13 @@ Devvit.addCustomPostType({
     const safePostId = postId ?? "";
 
     const requiredSpecialist = questions[currentQuestionIndex + 1]?.requiredSpecialist || "a specialist";
+
+    function handleSpecialistFound(user: string, profession: string) {
+      setMonitoring(false);
+      setJoinedSpecialist({ user, profession });
+      setScreen("specialist_joined");
+    }
+
     useCommentMonitor(
       monitoring,
       safePostId,
@@ -47,7 +56,7 @@ Devvit.addCustomPostType({
       specialists,
       setSpecialists,
       (data) => channel.send(data),
-      () => setMonitoring(false),
+      handleSpecialistFound,
       requiredSpecialist
     );
 
@@ -69,6 +78,12 @@ Devvit.addCustomPostType({
 
     return screen === "welcome" ? (
       <WelcomePage onStartGame={() => setScreen("challenge")} />
+    ) : screen === "specialist_joined" ? (
+      <SpecialistJoinedPage 
+        joinedSpecialist={joinedSpecialist} 
+        specialists={specialists} 
+        onContinue={() => setScreen("challenge")} 
+      />
     ) : (
       <QuestionPage
         question={questions[currentQuestionIndex].question}

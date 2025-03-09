@@ -9,7 +9,7 @@ export function useCommentMonitor(
   specialists: { [key: string]: string },
   setSpecialists: (value: { [key: string]: string }) => void,
   sendToChannel: (data: { type: string; user: string; profession: string }) => void,
-  stopMonitoring: () => void,
+  handleSpecialistFound: (user: string, profession: string) => void,
   requiredSpecialist: string
 ) {
   async function fetchComments() {
@@ -28,7 +28,7 @@ export function useCommentMonitor(
 
           if (profession.toLowerCase() === requiredSpecialist.toLowerCase()) {
             console.log(`✅ ${userName} is a ${profession}! Stopping monitor.`);
-            stopMonitoring();
+            handleSpecialistFound(userName, profession);
             interval.stop();
           } else {
             console.log(`⚠️ ${userName} joined as ${profession}, but we need a ${requiredSpecialist}.`);
