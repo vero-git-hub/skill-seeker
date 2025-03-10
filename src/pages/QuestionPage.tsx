@@ -50,7 +50,7 @@ export function QuestionPage({
         </hstack>
 
         {message && (
-          <text size="medium" alignment="center" wrap>
+          <text size="medium" alignment="center" color="#FFFFFF" wrap>
             {message}
           </text>
         )}
