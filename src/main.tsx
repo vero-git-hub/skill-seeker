@@ -115,6 +115,20 @@ Devvit.addCustomPostType({
       });
     }
 
+    function resetGame() {
+      updateGameState({
+        screen: "welcome",
+        message: "",
+        specialists: {},
+        monitoring: false,
+        currentQuestionIndex: 0,
+        joinedSpecialist: null,
+        waitingForSpecialist: false,
+      });
+
+      channel.send({ type: "stop_monitoring" });
+    }    
+
     return gameState.screen === "welcome" ? (
       <WelcomePage onStartGame={() => updateGameState({ screen: "challenge" })} />
     ) : gameState.screen === "specialist_joined" ? (
@@ -129,6 +143,7 @@ Devvit.addCustomPostType({
         answers={questions[gameState.currentQuestionIndex].answers}
         onAnswer={handleAnswer}
         message={gameState.message}
+        onRestart={resetGame}
       />
     );
   },
