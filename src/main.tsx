@@ -34,7 +34,7 @@ Devvit.addCustomPostType({
           };
     });
 
-    async function updateGameState(newState) {
+    async function updateGameState(newState: any) {
       const updatedState = { ...gameState, ...newState };
       setGameState(updatedState);
       await redis.set("gameState", JSON.stringify(updatedState));
@@ -60,9 +60,10 @@ Devvit.addCustomPostType({
 
     channel.subscribe();
 
-    const requiredSpecialist = questions[gameState.currentQuestionIndex + 1]?.requiredSpecialist || "a specialist";
+    const requiredSpecialist = questions[gameState.currentQuestionIndex]?.requiredSpecialist || "a specialist";
 
     function handleSpecialistFound(user: string, profession: string) {
+      console.log(`✅ Specialist found: ${user} (${profession})`);
       updateGameState({
         monitoring: false,
         waitingForSpecialist: false,

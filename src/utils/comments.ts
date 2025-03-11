@@ -12,7 +12,7 @@ export function useCommentMonitor(
   handleSpecialistFound: (user: string, profession: string) => void,
   requiredSpecialist: string
 ) {
-  async function fetchComments() {
+  const interval = useInterval(async () => {
     if (!monitoring) return;
 
     console.log(`🔄 comments.ts: Checking for a specialist: ${requiredSpecialist}...`);
@@ -28,8 +28,11 @@ export function useCommentMonitor(
 
           if (profession.toLowerCase() === requiredSpecialist.toLowerCase()) {
             console.log(`✅ ${userName} is a ${profession}! Stopping monitor.`);
-            handleSpecialistFound(userName, profession);
+            
+            updateGameState({ monitoring: false });
             interval.stop();
+            handleSpecialistFound(userName, profession);
+            return;
           } else {
             console.log(`⚠️ ${userName} joined as ${profession}, but we need a ${requiredSpecialist}.`);
           }
@@ -38,12 +41,11 @@ export function useCommentMonitor(
             specialists: { ...specialists, [userName]: profession },
           });
 
-          sendToChannel({ type: "join", user: userName, profession: profession });
+          sendToChannel({ type: "join", user: userName, profession });
         }
       }
     }
-  }
+  }, 5000);
 
-  const interval = useInterval(fetchComments, 5000);
   interval.start();
 }
