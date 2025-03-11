@@ -7,7 +7,7 @@ export function useCommentMonitor(
   postId: string,
   reddit: RedditAPIClient,
   specialists: { [key: string]: string },
-  setSpecialists: (value: { [key: string]: string }) => void,
+  updateGameState: (newState: object) => void,
   sendToChannel: (data: { type: string; user: string; profession: string }) => void,
   handleSpecialistFound: (user: string, profession: string) => void,
   requiredSpecialist: string
@@ -34,8 +34,9 @@ export function useCommentMonitor(
             console.log(`⚠️ ${userName} joined as ${profession}, but we need a ${requiredSpecialist}.`);
           }
 
-          const updatedSpecialists = { ...specialists, [userName]: profession };
-          setSpecialists(updatedSpecialists);
+          updateGameState({
+            specialists: { ...specialists, [userName]: profession },
+          });
 
           sendToChannel({ type: "join", user: userName, profession: profession });
         }

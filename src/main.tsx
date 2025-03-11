@@ -9,20 +9,37 @@ import { useCommentMonitor } from "@utils/comments.js";
 Devvit.configure({
   redditAPI: true,
   realtime: true,
+  redis: true,
 });
 
 Devvit.addCustomPostType({
   name: "SkillSeeker Experience",
   height: "regular",
   render: (context) => {
-    const { reddit, postId } = context;
-    const [screen, setScreen] = useState<"welcome" | "challenge" | "specialist_joined">("challenge");
-    const [message, setMessage] = useState("");
-    const [specialists, setSpecialists] = useState<{ [key: string]: string }>({});
-    const [monitoring, setMonitoring] = useState(false);
-    const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-    const [joinedSpecialist, setJoinedSpecialist] = useState<{ user: string; profession: string } | null>(null);
-    const [waitingForSpecialist, setWaitingForSpecialist] = useState(false);
+    const { reddit, redis, postId } = context;
+    const safePostId = postId ?? "";
+
+    const [gameState, setGameState] = useState(async () => {
+      const savedState = await redis.get("gameState");
+      return savedState
+        ? JSON.parse(savedState)
+        : {
+            screen: "welcome",
+            message: "",
+            specialists: {},
+            monitoring: false,
+            currentQuestionIndex: 0,
+            joinedSpecialist: null,
+            waitingForSpecialist: false,
+          };
+    });
+
+    async function updateGameState(newState) {
+      const updatedState = { ...gameState, ...newState };
+      setGameState(updatedState);
+      await redis.set("gameState", JSON.stringify(updatedState));
+      await channel.send({ gameState: updatedState });
+    }
 
     const channel = useChannel({
       name: "join_requests",
@@ -32,7 +49,10 @@ Devvit.addCustomPostType({
           const user = String(data.user);
           const profession = String(data.profession);
           console.log(`🛠️ ${user} joined as a ${profession}`);
-          setSpecialists((prev) => ({ ...prev, [user]: profession }));
+          
+          updateGameState({
+            specialists: { ...gameState.specialists, [user]: profession },
+          });
         }
       },
       onSubscribed: () => console.log("✅ Subscribed to join_requests channel"),
@@ -40,64 +60,75 @@ Devvit.addCustomPostType({
 
     channel.subscribe();
 
-    const safePostId = postId ?? "";
-    const requiredSpecialist = questions[currentQuestionIndex + 1]?.requiredSpecialist || "a specialist";
+    const requiredSpecialist = questions[gameState.currentQuestionIndex + 1]?.requiredSpecialist || "a specialist";
 
     function handleSpecialistFound(user: string, profession: string) {
-      setMonitoring(false);
-      setWaitingForSpecialist(false);
-      setJoinedSpecialist({ user, profession });
-      setScreen("specialist_joined");
+      updateGameState({
+        monitoring: false,
+        waitingForSpecialist: false,
+        joinedSpecialist: { user, profession },
+        screen: "specialist_joined",
+      });
     }
 
     useCommentMonitor(
-      monitoring,
+      gameState.monitoring,
       safePostId,
       reddit,
-      specialists,
-      setSpecialists,
+      gameState.specialists,
+      updateGameState,
       (data) => channel.send(data),
       handleSpecialistFound,
       requiredSpecialist
     );
 
     function handleAnswer(selectedAnswer: string) {
-      if (selectedAnswer === questions[currentQuestionIndex].correct) {
-        const nextQuestionIndex = currentQuestionIndex + 1;
+      if (selectedAnswer === questions[gameState.currentQuestionIndex].correct) {
+        const nextQuestionIndex = gameState.currentQuestionIndex + 1;
 
         if (nextQuestionIndex < questions.length) {
-          const requiredSpecialist = questions[nextQuestionIndex]?.requiredSpecialist || "a specialist";
-          setMessage(`✅ Correct! To proceed, find ${requiredSpecialist}.`);
-          setMonitoring(true);
-          setWaitingForSpecialist(true);
+          const nextRequiredSpecialist = questions[nextQuestionIndex]?.requiredSpecialist || "a specialist";
+
+          updateGameState({
+            message: `✅ Correct! To proceed, find ${nextRequiredSpecialist}.`,
+            monitoring: true,
+            waitingForSpecialist: true,
+            currentQuestionIndex: nextQuestionIndex,
+          });
         } else {
-          setMessage("🎉 Congratulations! You've completed the challenge.");
+          updateGameState({
+            message: "🎉 Congratulations! You've completed the challenge.",
+            screen: "finished",
+            waitingForSpecialist: false,
+          });
         } 
       } else {
-        setMessage("❌ Wrong answer. Try again!");
+        updateGameState({ message: "❌ Wrong answer. Try again!" });
       }
     }
 
     function handleContinue() {
-      setScreen("challenge");
-      setMessage("");
-      setCurrentQuestionIndex((prev) => prev + 1);
+      updateGameState({
+        screen: "challenge",
+        message: "",
+        currentQuestionIndex: gameState.currentQuestionIndex + 1,
+      });
     }
 
-    return screen === "welcome" ? (
-      <WelcomePage onStartGame={() => setScreen("challenge")} />
-    ) : screen === "specialist_joined" ? (
+    return gameState.screen === "welcome" ? (
+      <WelcomePage onStartGame={() => updateGameState({ screen: "challenge" })} />
+    ) : gameState.screen === "specialist_joined" ? (
       <SpecialistJoinedPage 
-        joinedSpecialist={joinedSpecialist} 
-        specialists={specialists} 
+        joinedSpecialist={gameState.joinedSpecialist} 
+        specialists={gameState.specialists} 
         onContinue={handleContinue}
       />
     ) : (
       <QuestionPage
-        question={questions[currentQuestionIndex].question}
-        answers={questions[currentQuestionIndex].answers}
+        question={questions[gameState.currentQuestionIndex].question}
+        answers={questions[gameState.currentQuestionIndex].answers}
         onAnswer={handleAnswer}
-        message={message}
+        message={gameState.message}
       />
     );
   },
