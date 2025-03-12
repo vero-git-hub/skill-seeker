@@ -72,7 +72,7 @@ Devvit.addCustomPostType({
 
     channel.subscribe();
 
-    const requiredSpecialist = questions[gameState.currentQuestionIndex]?.requiredSpecialist || "a specialist";
+    const requiredSpecialist = questions[gameState.currentQuestionIndex+1]?.requiredSpecialist || "a specialist";
 
     function handleSpecialistFound(user: string, profession: string) {
       console.log(`✅ Specialist found: ${user} (${profession})`);
@@ -136,7 +136,6 @@ Devvit.addCustomPostType({
             message: `✅ Correct! To proceed, find ${nextRequiredSpecialist}.`,
             monitoring: true,
             waitingForSpecialist: true,
-            currentQuestionIndex: nextQuestionIndex,
           });
         } else {
           updateGameState({
@@ -173,9 +172,7 @@ Devvit.addCustomPostType({
       channel.send({ type: "stop_monitoring" });
     }
 
-    return (
-      <vstack>
-        {gameState.screen === "welcome" ? (
+    return (gameState.screen === "welcome" ? (
           <WelcomePage 
             onStartGame={async () => {
               const currentUser = await reddit.getCurrentUser();
@@ -191,6 +188,7 @@ Devvit.addCustomPostType({
                 });
               } else {
                 console.log("⚠️ Player already in game, not adding again.");
+                await updateGameState({ screen: "challenge" });
               }
             }}
           />
@@ -207,15 +205,9 @@ Devvit.addCustomPostType({
             onAnswer={handleAnswer}
             message={gameState.message}
             onRestart={resetGame}
+            onInvite={handleInvite}
           />
-        )}
-
-        {gameState.screen !== "welcome" && currentUser && gameState.players.includes(currentUser) && (
-          <vstack gap="small" width="100%" height="50px">
-            <button onPress={handleInvite}>📩 Invite a Player</button>
-          </vstack>
-        )}
-      </vstack>
+        )
     );
   },
 });

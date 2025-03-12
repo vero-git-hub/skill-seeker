@@ -9,7 +9,8 @@ export function QuestionPage({
   onAnswer,
   message,
   onRestart,
-}: QuestionPageProps & { onRestart: () => void }) {
+  onInvite,
+}: QuestionPageProps & { onRestart: () => void; onInvite: () => void }) {
   const colors = ["#00FFFF", "#9400D3", "#FFD700", "#FF4500"];
   const [colorIndex, setColorIndex] = useState(0);
   const [isGlowing, setIsGlowing] = useState(true);
@@ -32,6 +33,7 @@ export function QuestionPage({
             ❓ Challenge Question ❓
           </text>
           <button icon="home" onPress={onRestart} />
+          <button icon="invite" onPress={onInvite} />
         </hstack>
 
         <vstack padding="medium" backgroundColor="rgba(0, 0, 0, 0.5)" cornerRadius="large">
