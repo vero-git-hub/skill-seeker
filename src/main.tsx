@@ -42,14 +42,14 @@ Devvit.addCustomPostType({
       if (currentUser !== null) return;
 
       try {
-        const user = await reddit.getCurrentUser();
-        if (!user) {
+        const username = await context.reddit.getCurrentUsername();
+        if (!username) {
           console.warn("⚠️ No current user found.");
           setCurrentUser(null);
           return;
         }
-        console.log("👤 Current user:", user.username);
-        setCurrentUser(user.username);
+        console.log("👤 Current user:", username);
+        setCurrentUser(username);
       } catch (error: any) {
         if (error.details?.includes("404")) {
           console.warn("⚠️ User not found, possibly deleted or banned.");
@@ -66,9 +66,6 @@ Devvit.addCustomPostType({
       const updatedState = { ...gameState, ...newState };
       await setGameState(updatedState);
       await redis.set("gameState", JSON.stringify(updatedState));
-
-      console.log("📢 Broadcasting gameState update:", updatedState);
-
       await channel.send({ gameState: updatedState });
     }
 
@@ -111,9 +108,7 @@ Devvit.addCustomPostType({
         joinedSpecialist: { user, profession },
         screen: "specialist_joined",
       };
-    
-      console.log("📢 Broadcasting gameState update for SpecialistJoinedPage:", updatedState);
-    
+  
       updateGameState(updatedState);
     }    
 
@@ -147,7 +142,8 @@ Devvit.addCustomPostType({
 
         console.log(`📩 Sending invitation to ${username}...`);
 
-        const postLink = `https://www.reddit.com/r/${context.subredditName}/comments/${context.postId}`;
+        const subredditName = await reddit.getCurrentSubredditName();
+        const postLink = `https://www.reddit.com/r/${subredditName}/comments/${context.postId}`;
         await sendInvitation(reddit, username, postLink);
         console.log("✅ Invitation sent!");
       }
