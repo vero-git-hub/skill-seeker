@@ -7,7 +7,10 @@ export function SpecialistJoinedPage({
   joinedSpecialist,
   specialists,
   onContinue,
-}: SpecialistJoinedPageProps) {
+  onRestart,
+}: SpecialistJoinedPageProps & {
+  onRestart: () => void;
+}) {
   const colors = ["#00FFFF", "#9400D3", "#FFD700", "#FF4500"];
   const [colorIndex, setColorIndex] = useState(0);
   const [isGlowing, setIsGlowing] = useState(true);
@@ -26,18 +29,21 @@ export function SpecialistJoinedPage({
 
       <vstack height="100%" width="100%" gap="large" alignment="center middle">
         {joinedSpecialist && (
-          <text size="xxlarge" weight="bold" color={colors[colorIndex]} outline="thick">
+          <text size="xlarge" weight="bold" color={colors[colorIndex]} outline="thick">
             ✅ {joinedSpecialist.user} joined as a {joinedSpecialist.profession}!
           </text>
         )}
-
-        <button
-          appearance={isGlowing ? "primary" : "secondary"}
-          textColor={isGlowing ? "#FFD700" : "#9400D3"}
-          onPress={onContinue}
-        >
-          🚀 Continue 🚀
-        </button>
+        
+        <hstack padding="medium" alignment="center">
+          <button
+            appearance={isGlowing ? "primary" : "secondary"}
+            textColor={isGlowing ? "#FFD700" : "#9400D3"}
+            onPress={onContinue}
+          >
+            🚀 Continue 🚀
+          </button>
+          <button icon="home" onPress={onRestart} />
+        </hstack>
       </vstack>
     </zstack>
   );

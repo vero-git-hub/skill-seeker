@@ -39,6 +39,8 @@ Devvit.addCustomPostType({
     const [currentUser, setCurrentUser] = useState<string | null>(null);
 
     async function fetchCurrentUser() {
+      if (currentUser !== null) return;
+
       try {
         const user = await reddit.getCurrentUser();
         if (!user) {
@@ -236,6 +238,7 @@ Devvit.addCustomPostType({
             joinedSpecialist={gameState.joinedSpecialist} 
             specialists={gameState.specialists} 
             onContinue={handleContinue}
+            onRestart={resetGame}
           />
         ) : (
           <QuestionPage
