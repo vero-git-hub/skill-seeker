@@ -1,10 +1,11 @@
 // main.tsx
-import { Devvit, useState, useChannel } from "@devvit/public-api";
+import { Devvit, useState, useChannel, useForm } from "@devvit/public-api";
 import { WelcomePage } from "@pages/WelcomePage.js";
 import { QuestionPage } from "@pages/QuestionPage.js";
 import { SpecialistJoinedPage } from "@pages/SpecialistJoinedPage.js";
 import { questions } from "@utils/questions.js";
 import { useCommentMonitor } from "@utils/comments.js";
+import { sendInvitation } from "@utils/sendInvitation.js";
 
 Devvit.configure({
   redditAPI: true,
@@ -22,7 +23,7 @@ Devvit.addCustomPostType({
     const [gameState, setGameState] = useState(async () => {
       const savedState = await redis.get("gameState");
       return savedState
-        ? JSON.parse(savedState)
+        ? { ...JSON.parse(savedState), players: JSON.parse(savedState).players || [] }
         : {
             screen: "welcome",
             message: "",
@@ -31,12 +32,22 @@ Devvit.addCustomPostType({
             currentQuestionIndex: 0,
             joinedSpecialist: null,
             waitingForSpecialist: false,
+            players: [],
           };
     });
 
+    const [currentUser, setCurrentUser] = useState<string | null>(null);
+
+    async function fetchCurrentUser() {
+      const user = await reddit.getCurrentUser();
+      setCurrentUser(user?.username || null);
+    }
+
+    fetchCurrentUser();
+
     async function updateGameState(newState: any) {
       const updatedState = { ...gameState, ...newState };
-      setGameState(updatedState);
+      await setGameState(updatedState);
       await redis.set("gameState", JSON.stringify(updatedState));
       await channel.send({ gameState: updatedState });
     }
@@ -52,6 +63,7 @@ Devvit.addCustomPostType({
           
           updateGameState({
             specialists: { ...gameState.specialists, [user]: profession },
+            players: [...gameState.players, user],
           });
         }
       },
@@ -82,6 +94,36 @@ Devvit.addCustomPostType({
       handleSpecialistFound,
       requiredSpecialist
     );
+
+    const inviteForm = useForm(
+      {
+        fields: [
+          {
+            type: "string",
+            name: "inviteUsername",
+            label: "Enter Reddit username to invite:",
+          },
+        ],
+      },
+      async (values) => {
+        const username = values.inviteUsername;
+        if (!username) {
+          console.error("❌ Please enter a username.");
+          return;
+        }
+
+        console.log(`📩 Sending invitation to ${username}...`);
+
+        const postLink = `https://www.reddit.com${safePostId}`;
+        await sendInvitation(reddit, username, postLink);
+        console.log("✅ Invitation sent!");
+      }
+    );
+
+    function handleInvite() {
+      console.log("📩 Showing invite form...");
+      context.ui.showForm(inviteForm);
+    }
 
     function handleAnswer(selectedAnswer: string) {
       if (selectedAnswer === questions[gameState.currentQuestionIndex].correct) {
@@ -125,27 +167,55 @@ Devvit.addCustomPostType({
         currentQuestionIndex: 0,
         joinedSpecialist: null,
         waitingForSpecialist: false,
+        players: [],
       });
 
       channel.send({ type: "stop_monitoring" });
-    }    
+    }
 
-    return gameState.screen === "welcome" ? (
-      <WelcomePage onStartGame={() => updateGameState({ screen: "challenge" })} />
-    ) : gameState.screen === "specialist_joined" ? (
-      <SpecialistJoinedPage 
-        joinedSpecialist={gameState.joinedSpecialist} 
-        specialists={gameState.specialists} 
-        onContinue={handleContinue}
-      />
-    ) : (
-      <QuestionPage
-        question={questions[gameState.currentQuestionIndex].question}
-        answers={questions[gameState.currentQuestionIndex].answers}
-        onAnswer={handleAnswer}
-        message={gameState.message}
-        onRestart={resetGame}
-      />
+    return (
+      <vstack>
+        {gameState.screen === "welcome" ? (
+          <WelcomePage 
+            onStartGame={async () => {
+              const currentUser = await reddit.getCurrentUser();
+              if (!currentUser) {
+                console.error("❌ No current user found!");
+                return;
+              }
+          
+              if (!gameState.players.includes(currentUser.username)) { 
+                updateGameState({
+                  screen: "challenge",
+                  players: [...gameState.players, currentUser.username],
+                });
+              } else {
+                console.log("⚠️ Player already in game, not adding again.");
+              }
+            }}
+          />
+        ) : gameState.screen === "specialist_joined" ? (
+          <SpecialistJoinedPage 
+            joinedSpecialist={gameState.joinedSpecialist} 
+            specialists={gameState.specialists} 
+            onContinue={handleContinue}
+          />
+        ) : (
+          <QuestionPage
+            question={questions[gameState.currentQuestionIndex].question}
+            answers={questions[gameState.currentQuestionIndex].answers}
+            onAnswer={handleAnswer}
+            message={gameState.message}
+            onRestart={resetGame}
+          />
+        )}
+
+        {gameState.screen !== "welcome" && currentUser && gameState.players.includes(currentUser) && (
+          <vstack gap="small" width="100%" height="50px">
+            <button onPress={handleInvite}>📩 Invite a Player</button>
+          </vstack>
+        )}
+      </vstack>
     );
   },
 });
