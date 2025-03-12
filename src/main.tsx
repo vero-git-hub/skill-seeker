@@ -206,6 +206,8 @@ Devvit.addCustomPostType({
             message={gameState.message}
             onRestart={resetGame}
             onInvite={handleInvite}
+            gameState={gameState}
+            currentUser={currentUser}
           />
         )
     );
