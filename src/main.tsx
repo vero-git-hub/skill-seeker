@@ -39,8 +39,23 @@ Devvit.addCustomPostType({
     const [currentUser, setCurrentUser] = useState<string | null>(null);
 
     async function fetchCurrentUser() {
-      const user = await reddit.getCurrentUser();
-      setCurrentUser(user?.username || null);
+      try {
+        const user = await reddit.getCurrentUser();
+        if (!user) {
+          console.warn("⚠️ No current user found.");
+          setCurrentUser(null);
+          return;
+        }
+        console.log("👤 Current user:", user.username);
+        setCurrentUser(user.username);
+      } catch (error: any) {
+        if (error.details?.includes("404")) {
+          console.warn("⚠️ User not found, possibly deleted or banned.");
+        } else {
+          console.error("❌ Failed to fetch current user:", error);
+        }
+        setCurrentUser(null);
+      }
     }
 
     fetchCurrentUser();
@@ -49,6 +64,9 @@ Devvit.addCustomPostType({
       const updatedState = { ...gameState, ...newState };
       await setGameState(updatedState);
       await redis.set("gameState", JSON.stringify(updatedState));
+
+      console.log("📢 Broadcasting gameState update:", updatedState);
+
       await channel.send({ gameState: updatedState });
     }
 
@@ -56,6 +74,13 @@ Devvit.addCustomPostType({
       name: "join_requests",
       onMessage: (data) => {
         if (!data || typeof data !== "object") return;
+
+        if ("gameState" in data) {
+          console.log("🔄 Received gameState update:", data.gameState);
+          setGameState(data.gameState);
+          return;
+        }
+
         if ("type" in data && data.type === "join" && "user" in data && "profession" in data) {
           const user = String(data.user);
           const profession = String(data.profession);
@@ -76,13 +101,19 @@ Devvit.addCustomPostType({
 
     function handleSpecialistFound(user: string, profession: string) {
       console.log(`✅ Specialist found: ${user} (${profession})`);
-      updateGameState({
+    
+      const updatedState = {
+        ...gameState,
         monitoring: false,
         waitingForSpecialist: false,
         joinedSpecialist: { user, profession },
         screen: "specialist_joined",
-      });
-    }
+      };
+    
+      console.log("📢 Broadcasting gameState update for SpecialistJoinedPage:", updatedState);
+    
+      updateGameState(updatedState);
+    }    
 
     useCommentMonitor(
       gameState.monitoring,
@@ -114,7 +145,7 @@ Devvit.addCustomPostType({
 
         console.log(`📩 Sending invitation to ${username}...`);
 
-        const postLink = `https://www.reddit.com${safePostId}`;
+        const postLink = `https://www.reddit.com/r/${context.subredditName}/comments/${context.postId}`;
         await sendInvitation(reddit, username, postLink);
         console.log("✅ Invitation sent!");
       }
@@ -150,11 +181,16 @@ Devvit.addCustomPostType({
     }
 
     function handleContinue() {
-      updateGameState({
+      const updatedState = {
+        ...gameState,
         screen: "challenge",
         message: "",
         currentQuestionIndex: gameState.currentQuestionIndex + 1,
-      });
+      };
+
+      console.log("🔄 Sending gameState update from handleContinue:", updatedState);
+
+      updateGameState(updatedState);
     }
 
     function resetGame() {
@@ -171,6 +207,9 @@ Devvit.addCustomPostType({
 
       channel.send({ type: "stop_monitoring" });
     }
+    
+    console.log("👤 Current user:", currentUser);
+    console.log("🎮 Players list:", gameState.players);
 
     return (gameState.screen === "welcome" ? (
           <WelcomePage 

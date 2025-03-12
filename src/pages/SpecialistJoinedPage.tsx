@@ -31,18 +31,6 @@ export function SpecialistJoinedPage({
           </text>
         )}
 
-        <vstack padding="medium" backgroundColor="rgba(0, 0, 0, 0.5)" cornerRadius="large">
-          <text size="large" weight="bold" color="#FFFFFF" outline="thick" alignment="center">
-          Current Specialists:
-          </text>
-
-          {Object.entries(specialists).map(([user, profession]) => (
-            <text key={user} size="medium" color="silver" weight="bold">
-              🛠 {user} - {String(profession)}
-            </text>
-          ))}
-        </vstack>
-
         <button
           appearance={isGlowing ? "primary" : "secondary"}
           textColor={isGlowing ? "#FFD700" : "#9400D3"}
