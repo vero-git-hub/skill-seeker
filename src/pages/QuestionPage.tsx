@@ -6,17 +6,14 @@ import { QuestionPageProps } from "@utils/types.js";
 export function QuestionPage({
   question,
   answers,
-  onAnswer,
-  message,
-  onRestart,
-  onInvite,
   gameState,
-  currentUser
+  onAnswer,
+  onInvite,
+  onRestart,
 }: QuestionPageProps & { 
-  onRestart: () => void; 
+  gameState: any; 
   onInvite: () => void;
-  gameState: any;
-  currentUser: string | null;
+  onRestart: () => void;
 }) {
   const colors = ["#00FFFF", "#9400D3", "#FFD700", "#FF4500"];
   const [colorIndex, setColorIndex] = useState(0);
@@ -41,7 +38,7 @@ export function QuestionPage({
           </text>
           <button icon="home" onPress={onRestart} />
 
-          {gameState.players.includes(currentUser) && (
+          {gameState.players.includes(gameState.currentUser) && (
             <button icon="invite" onPress={onInvite} />
            )}
         </hstack>
@@ -65,9 +62,9 @@ export function QuestionPage({
           ))}
         </hstack>
 
-        {message && (
+        {gameState.message && (
           <text size="medium" alignment="center" color="#FFFFFF" wrap>
-            {message}
+            {gameState.message}
           </text>
         )}
       </vstack>

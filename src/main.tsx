@@ -101,7 +101,7 @@ Devvit.addCustomPostType({
         joinedSpecialist: { user, profession },
         screen: "specialist_joined",
       };
-  
+
       updateGameState(updatedState);
     }    
 
@@ -224,8 +224,7 @@ Devvit.addCustomPostType({
           />
         ) : gameState.screen === "specialist_joined" ? (
           <SpecialistJoinedPage 
-            joinedSpecialist={gameState.joinedSpecialist} 
-            specialists={gameState.specialists} 
+            gameState={gameState}
             onContinue={handleContinue}
             onRestart={resetGame}
           />
@@ -233,12 +232,10 @@ Devvit.addCustomPostType({
           <QuestionPage
             question={questions[gameState.currentQuestionIndex].question}
             answers={questions[gameState.currentQuestionIndex].answers}
-            onAnswer={handleAnswer}
-            message={gameState.message}
-            onRestart={resetGame}
-            onInvite={handleInvite}
             gameState={gameState}
-            currentUser={gameState.currentUser}
+            onAnswer={handleAnswer}
+            onInvite={handleInvite}
+            onRestart={resetGame}
           />
         )
     );

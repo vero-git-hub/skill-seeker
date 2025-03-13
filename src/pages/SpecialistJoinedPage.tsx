@@ -4,11 +4,12 @@ import { BackgroundImage } from "@components/Image.js";
 import { SpecialistJoinedPageProps } from "@utils/types.js";
 
 export function SpecialistJoinedPage({
-  joinedSpecialist,
-  specialists,
+  gameState,
   onContinue,
   onRestart,
 }: SpecialistJoinedPageProps & {
+  gameState: any;
+  onContinue: () => void;
   onRestart: () => void;
 }) {
   const colors = ["#00FFFF", "#9400D3", "#FFD700", "#FF4500"];
@@ -23,16 +24,16 @@ export function SpecialistJoinedPage({
     setIsGlowing((prev) => !prev);
   }, 1500).start();
 
+  const { user, profession } = gameState.joinedSpecialist || {};
+
   return (
     <zstack height="100%" width="100%">
       <BackgroundImage url="bg_specialist.png" description="Specialist Joining Background" />
 
       <vstack height="100%" width="100%" gap="large" alignment="center middle">
-        {joinedSpecialist && (
-          <text size="xlarge" weight="bold" color={colors[colorIndex]} outline="thick">
-            ✅ {joinedSpecialist.user} joined as a {joinedSpecialist.profession}!
-          </text>
-        )}
+        <text size="xlarge" weight="bold" color={colors[colorIndex]} outline="thick">
+          ✅ {user} joined as a {profession}!
+        </text>
         
         <hstack padding="medium" alignment="center">
           <button
