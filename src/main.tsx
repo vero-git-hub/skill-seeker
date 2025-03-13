@@ -23,10 +23,22 @@ Devvit.addCustomPostType({
     const [gameState, setGameState] = useState(async () => {
       try {
         const [savedState, username] = await Promise.all([
-          redis.get("gameState"),
-          reddit.getCurrentUsername(),
+          context.cache(
+            async () => {
+              const state = await redis.get("gameState");
+              return state ? JSON.parse(state) : {};
+            },
+            { key: `gameState_${safePostId}`, ttl: 30 * 1000 }
+          ),
+          context.cache(
+            async () => {
+              const username = await reddit.getCurrentUsername();
+              return username ? username : null;
+            },
+            { key: `user_${context.userId}`, ttl: 5 * 60 * 1000 }
+          ),
         ]);
-
+    
         return {
           screen: "welcome",
           message: "",
@@ -36,8 +48,8 @@ Devvit.addCustomPostType({
           joinedSpecialist: null,
           waitingForSpecialist: false,
           players: [],
-          ...(savedState ? JSON.parse(savedState) : {}),
-          currentUser: username || null,
+          ...savedState,
+          currentUser: username,
         };
       } catch (error) {
         console.error("❌ Error fetching game state:", error);
@@ -53,12 +65,13 @@ Devvit.addCustomPostType({
           currentUser: null,
         };
       }
-    });
+    });    
 
     async function updateGameState(newState: any) {
       const updatedState = { ...gameState, ...newState };
       await setGameState(updatedState);
       await redis.set("gameState", JSON.stringify(updatedState));
+      await context.cache(() => updatedState, { key: `gameState_${safePostId}`, ttl: 30 * 1000 });
       await channel.send({ gameState: updatedState });
     }
 
@@ -135,7 +148,11 @@ Devvit.addCustomPostType({
 
         console.log(`📩 Sending invitation to ${username}...`);
 
-        const subredditName = await reddit.getCurrentSubredditName();
+        const subredditName = await context.cache(
+          async () => await reddit.getCurrentSubredditName(),
+          { key: `subreddit_${context.postId}`, ttl: 5 * 60 * 1000 }
+        );
+
         const postLink = `https://www.reddit.com/r/${subredditName}/comments/${context.postId}`;
         await sendInvitation(reddit, username, postLink);
         console.log("✅ Invitation sent!");
