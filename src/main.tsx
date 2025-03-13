@@ -33,7 +33,7 @@ Devvit.addCustomPostType({
           context.cache(
             async () => {
               const username = await reddit.getCurrentUsername();
-              return username ? username : null;
+              return username || null;
             },
             { key: `user_${context.userId}`, ttl: 5 * 60 * 1000 }
           ),
@@ -69,38 +69,62 @@ Devvit.addCustomPostType({
 
     async function updateGameState(newState: any) {
       const updatedState = { ...gameState, ...newState };
+
+      if (JSON.stringify(gameState) === JSON.stringify(updatedState)) {
+        console.log("No changes in gameState, no update required.");
+        return;
+      }
+
+      console.log("📢 Updating gameState:", updatedState);
+
       await setGameState(updatedState);
       await redis.set("gameState", JSON.stringify(updatedState));
       await context.cache(() => updatedState, { key: `gameState_${safePostId}`, ttl: 30 * 1000 });
-      await channel.send({ gameState: updatedState });
+      
+      await context.realtime.send("gameState_updates", updatedState);
     }
 
-    const channel = useChannel({
+    const realtimeChannel = useChannel({
+      name: "gameState_updates",
+      onMessage: (newGameState) => {
+        console.log("🔄 Received gameState update via realtime:", newGameState);
+        updateGameState(newGameState);
+      },
+    });
+    realtimeChannel.subscribe();
+
+    const joinRequestsChannel = useChannel({
       name: "join_requests",
       onMessage: (data) => {
         if (!data || typeof data !== "object") return;
 
         if ("gameState" in data) {
           console.log("🔄 Received gameState update:", data.gameState);
-          setGameState(data.gameState);
+          updateGameState(data.gameState);
           return;
         }
 
         if ("type" in data && data.type === "join" && "user" in data && "profession" in data) {
           const user = String(data.user);
           const profession = String(data.profession);
+          
+          if (gameState.players?.includes(user)) {
+            console.log(`⚠️ ${user} already in the game, skip the update.`);
+            return;
+          }
+
           console.log(`🛠️ ${user} joined as a ${profession}`);
           
           updateGameState({
             specialists: { ...gameState.specialists, [user]: profession },
-            players: [...gameState.players, user],
+            players: [...(gameState.players || []), user],
           });
         }
       },
       onSubscribed: () => console.log("✅ Subscribed to join_requests channel"),
     });
 
-    channel.subscribe();
+    joinRequestsChannel.subscribe();
 
     const requiredSpecialist = questions[gameState.currentQuestionIndex+1]?.requiredSpecialist || "a specialist";
 
@@ -124,7 +148,7 @@ Devvit.addCustomPostType({
       reddit,
       gameState.specialists,
       updateGameState,
-      (data) => channel.send(data),
+      (data) => joinRequestsChannel.send(data),
       handleSpecialistFound,
       requiredSpecialist
     );
@@ -201,8 +225,8 @@ Devvit.addCustomPostType({
       updateGameState(updatedState);
     }
 
-    function resetGame() {
-      updateGameState({
+    async function resetGame() {
+      const initialState = {
         screen: "welcome",
         message: "",
         specialists: {},
@@ -211,9 +235,13 @@ Devvit.addCustomPostType({
         joinedSpecialist: null,
         waitingForSpecialist: false,
         players: [],
-      });
+      };
 
-      channel.send({ type: "stop_monitoring" });
+      updateGameState(initialState);
+
+      joinRequestsChannel.send({ type: "stop_monitoring" });
+
+      await context.realtime.send("gameState_updates", initialState);
     }
     
     console.log("👤 Current user:", gameState.currentUser);
