@@ -21,46 +21,39 @@ Devvit.addCustomPostType({
     const safePostId = postId ?? "";
 
     const [gameState, setGameState] = useState(async () => {
-      const savedState = await redis.get("gameState");
-      return savedState
-        ? { ...JSON.parse(savedState), players: JSON.parse(savedState).players || [] }
-        : {
-            screen: "welcome",
-            message: "",
-            specialists: {},
-            monitoring: false,
-            currentQuestionIndex: 0,
-            joinedSpecialist: null,
-            waitingForSpecialist: false,
-            players: [],
-          };
-    });
-
-    const [currentUser, setCurrentUser] = useState<string | null>(null);
-
-    async function fetchCurrentUser() {
-      if (currentUser !== null) return;
-
       try {
-        const username = await context.reddit.getCurrentUsername();
-        if (!username) {
-          console.warn("⚠️ No current user found.");
-          setCurrentUser(null);
-          return;
-        }
-        console.log("👤 Current user:", username);
-        setCurrentUser(username);
-      } catch (error: any) {
-        if (error.details?.includes("404")) {
-          console.warn("⚠️ User not found, possibly deleted or banned.");
-        } else {
-          console.error("❌ Failed to fetch current user:", error);
-        }
-        setCurrentUser(null);
-      }
-    }
+        const [savedState, username] = await Promise.all([
+          redis.get("gameState"),
+          reddit.getCurrentUsername(),
+        ]);
 
-    fetchCurrentUser();
+        return {
+          screen: "welcome",
+          message: "",
+          specialists: {},
+          monitoring: false,
+          currentQuestionIndex: 0,
+          joinedSpecialist: null,
+          waitingForSpecialist: false,
+          players: [],
+          ...(savedState ? JSON.parse(savedState) : {}),
+          currentUser: username || null,
+        };
+      } catch (error) {
+        console.error("❌ Error fetching game state:", error);
+        return {
+          screen: "welcome",
+          message: "Error loading game state.",
+          specialists: {},
+          monitoring: false,
+          currentQuestionIndex: 0,
+          joinedSpecialist: null,
+          waitingForSpecialist: false,
+          players: [],
+          currentUser: null,
+        };
+      }
+    });
 
     async function updateGameState(newState: any) {
       const updatedState = { ...gameState, ...newState };
@@ -206,7 +199,7 @@ Devvit.addCustomPostType({
       channel.send({ type: "stop_monitoring" });
     }
     
-    console.log("👤 Current user:", currentUser);
+    console.log("👤 Current user:", gameState.currentUser);
     console.log("🎮 Players list:", gameState.players);
 
     return (gameState.screen === "welcome" ? (
@@ -245,7 +238,7 @@ Devvit.addCustomPostType({
             onRestart={resetGame}
             onInvite={handleInvite}
             gameState={gameState}
-            currentUser={currentUser}
+            currentUser={gameState.currentUser}
           />
         )
     );
