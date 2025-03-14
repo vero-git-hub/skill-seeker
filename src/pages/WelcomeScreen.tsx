@@ -1,18 +1,10 @@
-import { Devvit, useState, useInterval } from "@devvit/public-api";
+// pages/WelcomeScreen.tsx
+import { Devvit, useState } from "@devvit/public-api";
 import { BackgroundImage } from "@components/Image.js";
 
-export function WelcomePage({ onStartGame }: { onStartGame: () => void }) {
+export function WelcomeScreen({ onStartGame }: { onStartGame: () => void }) {
   const colors = ["#00FFFF", "#9400D3", "#FFD700", "#FF4500"];
   const [colorIndex, setColorIndex] = useState(0);
-  const [isGlowing, setIsGlowing] = useState(true);
-
-  useInterval(() => {
-    setColorIndex((prevIndex) => (prevIndex + 1) % colors.length);
-  }, 2000).start();
-
-  useInterval(() => {
-    setIsGlowing((prev) => !prev);
-  }, 1500).start();
 
   return (
     <zstack height="100%" width="100%">
@@ -33,7 +25,10 @@ export function WelcomePage({ onStartGame }: { onStartGame: () => void }) {
 
         <button
           appearance="primary"
-          onPress={onStartGame}
+          onPress={() => {
+            console.log("🖱️ Button clicked in WelcomeScreen!");
+            onStartGame();
+          }}
         >
           🚀 Begin the Journey 🚀
         </button>

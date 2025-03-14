@@ -1,5 +1,5 @@
 // utils/types.ts
-export interface QuestionPageProps {
+export interface ChallengeScreenProps {
   question: string;
   answers: string[];
   onAnswer: (answer: string) => void;
