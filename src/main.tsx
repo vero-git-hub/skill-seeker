@@ -67,22 +67,29 @@ Devvit.addCustomPostType({
       }
     });    
 
-    async function updateGameState(newState: any) {
-      const updatedState = { ...gameState, ...newState };
-
-      if (JSON.stringify(gameState) === JSON.stringify(updatedState)) {
-        console.log("No changes in gameState, no update required.");
-        return;
-      }
-
-      console.log("📢 Updating gameState:", updatedState);
-
-      await setGameState(updatedState);
-      await redis.set("gameState", JSON.stringify(updatedState));
-      await context.cache(() => updatedState, { key: `gameState_${safePostId}`, ttl: 30 * 1000 });
-      
-      await context.realtime.send("gameState_updates", updatedState);
-    }
+    function updateGameState(newStateOrUpdater: any | ((prevState: any) => any)) {
+      setGameState((prevState) => {
+        const updatedState =
+          typeof newStateOrUpdater === "function"
+            ? newStateOrUpdater(prevState)
+            : { ...prevState, ...newStateOrUpdater };
+    
+        if (JSON.stringify(prevState) === JSON.stringify(updatedState)) {
+          console.log("No changes in gameState, no update required.");
+          return prevState;
+        }
+    
+        console.log("📢 Updating gameState:", updatedState);
+    
+        (async () => {
+          await redis.set("gameState", JSON.stringify(updatedState));
+          await context.cache(() => updatedState, { key: `gameState_${safePostId}`, ttl: 30 * 1000 });
+          await context.realtime.send("gameState_updates", updatedState);
+        })();
+    
+        return updatedState;
+      });
+    }    
 
     const realtimeChannel = useChannel({
       name: "gameState_updates",
@@ -108,16 +115,17 @@ Devvit.addCustomPostType({
           const user = String(data.user);
           const profession = String(data.profession);
           
-          if (gameState.players?.includes(user)) {
-            console.log(`⚠️ ${user} already in the game, skip the update.`);
-            return;
-          }
-
-          console.log(`🛠️ ${user} joined as a ${profession}`);
-          
-          updateGameState({
-            specialists: { ...gameState.specialists, [user]: profession },
-            players: [...(gameState.players || []), user],
+          updateGameState((prevState) => {
+            if (prevState.players?.includes(user)) {
+              console.log(`⚠️ ${user} already in the game, skip the update.`);
+              return prevState;
+            }
+            console.log(`🛠️ ${user} joined as a ${profession}`);
+            return {
+              ...prevState,
+              specialists: { ...prevState.specialists, [user]: profession },
+              players: [...(prevState.players || []), user],
+            };
           });
         }
       },
@@ -189,41 +197,50 @@ Devvit.addCustomPostType({
     }
 
     function handleAnswer(selectedAnswer: string) {
-      if (selectedAnswer === questions[gameState.currentQuestionIndex].correct) {
-        const nextQuestionIndex = gameState.currentQuestionIndex + 1;
-
-        if (nextQuestionIndex < questions.length) {
-          const nextRequiredSpecialist = questions[nextQuestionIndex]?.requiredSpecialist || "a specialist";
-
-          updateGameState({
-            message: `✅ Correct! To proceed, find ${nextRequiredSpecialist}.`,
-            monitoring: true,
-            waitingForSpecialist: true,
-          });
+      updateGameState((prevState) => {
+        if (selectedAnswer === questions[prevState.currentQuestionIndex].correct) {
+          const nextQuestionIndex = prevState.currentQuestionIndex + 1;
+    
+          if (nextQuestionIndex < questions.length) {
+            const nextRequiredSpecialist = questions[nextQuestionIndex]?.requiredSpecialist || "a specialist";
+            console.log(`✅ Correct answer. Waiting for ${nextRequiredSpecialist}.`);
+            return {
+              ...prevState,
+              message: `✅ Correct! To proceed, find ${nextRequiredSpecialist}.`,
+              monitoring: true,
+              waitingForSpecialist: true,
+            };
+          } else {
+            console.log("🎉 Challenge completed!");
+            return {
+              ...prevState,
+              message: "🎉 Congratulations! You've completed the challenge.",
+              screen: "finished",
+              waitingForSpecialist: false,
+            };
+          }
         } else {
-          updateGameState({
-            message: "🎉 Congratulations! You've completed the challenge.",
-            screen: "finished",
-            waitingForSpecialist: false,
-          });
-        } 
-      } else {
-        updateGameState({ message: "❌ Wrong answer. Try again!" });
-      }
-    }
+          console.log("❌ Wrong answer. Try again!");
+          return {
+            ...prevState,
+            message: "❌ Wrong answer. Try again!",
+          };
+        }
+      });
+    }    
 
     function handleContinue() {
-      const updatedState = {
-        ...gameState,
-        screen: "challenge",
-        message: "",
-        currentQuestionIndex: gameState.currentQuestionIndex + 1,
-      };
-
-      console.log("🔄 Sending gameState update from handleContinue:", updatedState);
-
-      updateGameState(updatedState);
-    }
+      updateGameState((prevState) => {
+        const updatedState = {
+          ...prevState,
+          screen: "challenge",
+          message: "",
+          currentQuestionIndex: prevState.currentQuestionIndex + 1,
+        };
+        console.log("🔄 Sending gameState update from handleContinue:", updatedState);
+        return updatedState;
+      });
+    }    
 
     async function resetGame() {
       const initialState = {
