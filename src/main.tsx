@@ -2,38 +2,29 @@
 import { Devvit, useState } from "@devvit/public-api";
 import { WelcomeScreen } from "@pages/WelcomeScreen.js";
 import { ChallengeScreen } from "@pages/ChallengeScreen.js";
+import { GameState } from "@utils/types.js";
+
+Devvit.configure({
+  redditAPI: true,
+});
 
 Devvit.addCustomPostType({
   name: "SkillSeeker Experience",
   height: "regular",
-  render: (context) => {
-    console.log("App started...");
+  render: () => {
+    const [gameState, setGameState] = useState<GameState>({ screen: "welcome" });
 
-    const [gameState, setGameState] = useState({ screen: "welcome" });
-
-    (async () => {
-      console.log("🔄 Loading game state from cache...");
-      let cachedState = await context.cache(
-        async () => ({ screen: "welcome" }),
-        { key: "gameState", ttl: 60 * 1000 }
-      );
-      console.log("📦 Cached gameState:", cachedState);
-      setGameState(cachedState);
-    })();
-
-    function handleStartGame() {
-      console.log("🚀 Starting game...");
-      const newState = { screen: "challenge" };
+    function updateGameState(newState: GameState) {
+      console.log("📢 Changing screen to:", newState.screen);
       setGameState(newState);
-      context.cache(() => newState, { key: "gameState", ttl: 60 * 1000 });
     }
 
     console.log("🎮 Current gameState:", gameState);
 
     return gameState.screen === "welcome" ? (
-      <WelcomeScreen onStartGame={handleStartGame} />
+      <WelcomeScreen onStartGame={() => updateGameState({ screen: "challenge" })} />
     ) : (
-      <ChallengeScreen />
+      <ChallengeScreen onGoBack={() => updateGameState({ screen: "welcome" })} />
     );
   },
 });

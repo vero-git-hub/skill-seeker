@@ -2,7 +2,7 @@
 import { Devvit } from "@devvit/public-api";
 import { BackgroundImage } from "@components/Image.js";
 
-export function ChallengeScreen() {
+export function ChallengeScreen({ onGoBack }: { onGoBack: () => void }) {
   console.log("🏆 ChallengeScreen rendered!");
 
   return (
@@ -17,6 +17,10 @@ export function ChallengeScreen() {
         <text size="medium" color="silver" alignment="center">
           Solve the puzzles to move forward!
         </text>
+        
+        <button appearance="primary" onPress={onGoBack}>
+        🔙 Back to Welcome
+      </button>
       </vstack>
     </zstack>
   );

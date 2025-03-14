@@ -9,3 +9,7 @@ export interface ChallengeScreenProps {
 export interface SpecialistJoinedPageProps {
   onContinue: () => void;
 }
+
+export type GameState = {
+  screen: "welcome" | "challenge";
+};
