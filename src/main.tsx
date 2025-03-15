@@ -1,9 +1,10 @@
 // main.tsx
-import { Devvit, useState, useChannel } from "@devvit/public-api";
+import { Devvit, useState } from "@devvit/public-api";
 import { WelcomeScreen } from "@pages/WelcomeScreen.js";
 import { ChallengeScreen } from "@pages/ChallengeScreen.js";
 import { GameState } from "@utils/types.js";
 import { updateGameState } from "@utils/state.js";
+import { useGameStateChannel } from "@utils/realtime.js";
 
 Devvit.configure({
   redditAPI: true,
@@ -16,16 +17,7 @@ Devvit.addCustomPostType({
   render: (context) => {
     const [gameState, setGameState] = useState<GameState>({ screen: "welcome" });
 
-    // 🔄 Subscribe to game status updates
-    const realtimeChannel = useChannel({
-      name: "gameState_updates",
-      onMessage: (newGameState: GameState) => {
-        console.log("🔄 Received gameState update:", newGameState);
-        setGameState(newGameState);
-      },
-    });
-
-    realtimeChannel.subscribe();
+    useGameStateChannel(setGameState);
 
     console.log("🎮 Current gameState:", gameState);
 
