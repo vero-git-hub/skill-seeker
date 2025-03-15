@@ -3,6 +3,7 @@ import { Devvit, useState, useChannel } from "@devvit/public-api";
 import { WelcomeScreen } from "@pages/WelcomeScreen.js";
 import { ChallengeScreen } from "@pages/ChallengeScreen.js";
 import { GameState } from "@utils/types.js";
+import { updateGameState } from "@utils/state.js";
 
 Devvit.configure({
   redditAPI: true,
@@ -14,15 +15,6 @@ Devvit.addCustomPostType({
   height: "regular",
   render: (context) => {
     const [gameState, setGameState] = useState<GameState>({ screen: "welcome" });
-
-    // 🔄 State update function
-    function updateGameState(newState: GameState) {
-      console.log("📢 Changing screen to:", newState.screen);
-
-      context.realtime.send("gameState_updates", newState);
-
-      setGameState(newState);
-    }
 
     // 🔄 Subscribe to game status updates
     const realtimeChannel = useChannel({
@@ -38,9 +30,9 @@ Devvit.addCustomPostType({
     console.log("🎮 Current gameState:", gameState);
 
     return gameState.screen === "welcome" ? (
-      <WelcomeScreen onStartGame={() => updateGameState({ screen: "challenge" })} />
+      <WelcomeScreen onStartGame={() => updateGameState({ screen: "challenge" }, context, setGameState)} />
     ) : (
-      <ChallengeScreen onGoBack={() => updateGameState({ screen: "welcome" })} />
+      <ChallengeScreen onGoBack={() => updateGameState({ screen: "welcome" }, context, setGameState)} />
     );
   },
 });
