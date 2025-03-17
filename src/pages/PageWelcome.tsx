@@ -1,7 +1,11 @@
-import {Devvit} from '@devvit/public-api'
-import {PageProps} from '@utils/types.js'
+// pages/PageWelcome.tsx
+import {Devvit} from '@devvit/public-api';
+import {PageProps} from '@utils/types.js';
 
-export const PageWelcome = ({ setPage, specialists }: PageProps & {specialists: string[] }) => {
+export const PageWelcome = ({setPage, specialists, onInvite}: PageProps & {
+  specialists: string[];
+  onInvite: () => void;
+}) => {
   const firstRow = specialists.slice(0, 4);
   const secondRow = specialists.slice(4);
 
@@ -29,7 +33,10 @@ export const PageWelcome = ({ setPage, specialists }: PageProps & {specialists: 
         <text size="medium">Write in the comment: /join [profession_number]</text>
       </vstack>
 
-      <button onPress={() => setPage('team')}>Start Game</button>
+      <hstack gap="small">
+        <button onPress={onInvite}>📩 Invite Player</button>
+        <button onPress={() => setPage('team')}>Start Game</button>
+      </hstack>
     </vstack>
   );
 }
