@@ -1,10 +1,11 @@
 import {Devvit} from '@devvit/public-api'
+import {questions} from '@utils/questions.js'
 
 type PageProps = {
   setPage: (page: string) => void;
 }
 
-const PageWelcome = ({ setPage }: PageProps) => (
+const PageWelcome = ({ setPage, specialists }: PageProps & {specialists: string[] }) => (
   <vstack
     width="100%"
     height="100%"
@@ -15,12 +16,14 @@ const PageWelcome = ({ setPage }: PageProps) => (
     <text size="xxlarge">🔮 SkillSeeker 🔮</text>
     <text size="large">Secret society of professionals... Before start, you need: </text>
     <vstack gap="small">
-      <text>1️⃣ REDDITOR 2️⃣ PHYSICIST 3️⃣ DOCTOR 4️⃣ PLUMBER</text>
-      <text>5️⃣ PROGRAMMER 6️⃣ LAWYER 7️⃣ ASTRONOMER</text>
+      {specialists.map((spec, index) => (
+        <text key={index} size="small">
+          {`${index + 1}️⃣ ${spec.toUpperCase()} `}
+        </text>
+      ))}
     </vstack>
     <vstack gap="small">
-      <text size="medium">To join, write in the comment: /join [profession_number]</text>
-      <text size="medium">Example, for doctor: /join 3</text>
+      <text size="medium">Write in the comment: /join [profession_number]</text>
     </vstack>
     <button onPress={() => setPage('team')}>Start Game</button>
   </vstack>
@@ -48,7 +51,7 @@ const PageChallenge = ({ setPage }: PageProps) => (
   </vstack>
 );
 
-const PageTeam = ({ setPage }: PageProps) => (
+const PageTeam = ({ setPage, specialists }: PageProps & {specialists: string[] }) => (
   <vstack
     width="100%"
     height="100%"
@@ -58,13 +61,11 @@ const PageTeam = ({ setPage }: PageProps) => (
   >
     <text size="xxlarge" color="white">🎯 Team 🎯</text>
     <vstack gap="small">
-      <text size="small" color="white">1️⃣ REDDITOR - </text>
-      <text size="small" color="white">2️⃣ PHYSICIST - </text>
-      <text size="small" color="white">3️⃣ DOCTOR - </text>
-      <text size="small" color="white">4️⃣ PLUMBER - </text>
-      <text size="small" color="white">5️⃣ PROGRAMMER - </text>
-      <text size="small" color="white">6️⃣ LAWYER - </text>
-      <text size="small" color="white">7️⃣ ASTRONOMER - </text>
+      {specialists.map((spec, index) => (
+        <text key={index} size="small" color="white">
+          {`${index + 1}️⃣ ${spec.toUpperCase()} - `}
+        </text>
+      ))}
     </vstack>
     <hstack gap="small">
       <button onPress={() => setPage('welcome')}>Start Again</button>
@@ -95,22 +96,24 @@ Devvit.addCustomPostType({
     const { useState } = context;
     const [page, setPage] = useState('welcome');
 
+    const specialists = [...new Set(questions.map(q => q.requiredSpecialist))];
+
     let currentPage;
     switch (page) {
       case 'welcome':
-        currentPage = <PageWelcome setPage={setPage} />;
+        currentPage = <PageWelcome setPage={setPage} specialists={specialists} />;
         break;
       case 'challenge':
         currentPage = <PageChallenge setPage={setPage} />;
         break;
       case 'team':
-        currentPage = <PageTeam setPage={setPage} />;
+        currentPage = <PageTeam setPage={setPage} specialists={specialists} />;
         break;
       case 'victory':
         currentPage = <PageVictory setPage={setPage} />;
         break;
       default:
-        currentPage = <PageWelcome setPage={setPage} />;
+        currentPage = <PageWelcome setPage={setPage} specialists={specialists} />;
     }
 
     return (

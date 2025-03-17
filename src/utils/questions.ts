@@ -1,9 +1,9 @@
 export const questions = [
   {
     question: "In what country was Reddit created?",
-    answers: ["USA", "Canada", "UK"],
+    answers: ["USA", "Canada", "India"],
     correct: "USA",
-    requiredSpecialist: null,
+    requiredSpecialist: "redditor",
   },
   {
     question:
@@ -25,6 +25,13 @@ export const questions = [
     answers: ["Flexible trap", "P-trap", "Bottle trap"],
     correct: "Bottle trap",
     requiredSpecialist: "plumber",
+  },
+  {
+    question:
+      "What is recursion?",
+    answers: ["Loop", "Self-call", "Variable"],
+    correct: "Self-call",
+    requiredSpecialist: "programmer",
   },
   {
     question:
