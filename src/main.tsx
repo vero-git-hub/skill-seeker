@@ -22,7 +22,7 @@ const PageWelcome = ({ setPage }: PageProps) => (
       <text size="medium">To join, write in the comment: /join [profession_number]</text>
       <text size="medium">Example, for doctor: /join 3</text>
     </vstack>
-    <button onPress={() => setPage('challenge')}>Start Game</button>
+    <button onPress={() => setPage('team')}>Start Game</button>
   </vstack>
 );
 
@@ -36,24 +36,19 @@ const PageChallenge = ({ setPage }: PageProps) => (
   >
     <text size="xxlarge">🏆 Challenge 🏆</text>
     <text size="large">In what country was Reddit created?</text>
-    <hstack
-      gap="medium"
-    >
+    <hstack gap="medium">
       <button size="medium">USA</button>
       <button size="medium">Canada</button>
       <button size="medium">India</button>
     </hstack>
-    <hstack
-      gap="medium"
-    >
+    <hstack gap="medium">
       <button onPress={() => setPage('welcome')}>Start Again</button>
-      <button onPress={() => setPage('professional')}>Answer(temp)</button>
       <button onPress={() => setPage('victory')}>Victory(temp)</button>
     </hstack>
   </vstack>
 );
 
-const PageProfessional = ({ setPage }: PageProps) => (
+const PageTeam = ({ setPage }: PageProps) => (
   <vstack
     width="100%"
     height="100%"
@@ -61,11 +56,17 @@ const PageProfessional = ({ setPage }: PageProps) => (
     gap="large"
     backgroundColor="green"
   >
-    <text size="xxlarge" color="white">🎯 Professional 🎯</text>
-    <text size="large" color="white">"User" joined as physicist</text>
-    <hstack
-      gap="medium"
-    >
+    <text size="xxlarge" color="white">🎯 Team 🎯</text>
+    <vstack gap="small">
+      <text size="small" color="white">1️⃣ REDDITOR - </text>
+      <text size="small" color="white">2️⃣ PHYSICIST - </text>
+      <text size="small" color="white">3️⃣ DOCTOR - </text>
+      <text size="small" color="white">4️⃣ PLUMBER - </text>
+      <text size="small" color="white">5️⃣ PROGRAMMER - </text>
+      <text size="small" color="white">6️⃣ LAWYER - </text>
+      <text size="small" color="white">7️⃣ ASTRONOMER - </text>
+    </vstack>
+    <hstack gap="small">
       <button onPress={() => setPage('welcome')}>Start Again</button>
       <button onPress={() => setPage('challenge')}>Continue</button>
     </hstack>
@@ -82,9 +83,7 @@ const PageVictory = ({ setPage }: PageProps) => (
   >
     <text size="xxlarge" color="white">🎉 Victory 🎉</text>
     <text size="large" color="white">Congratulations! Your team of professionals has won.</text>
-    <hstack
-      gap="medium"
-    >
+    <hstack gap="medium">
       <button onPress={() => setPage('welcome')}>Start Again</button>
     </hstack>
   </vstack>
@@ -104,8 +103,8 @@ Devvit.addCustomPostType({
       case 'challenge':
         currentPage = <PageChallenge setPage={setPage} />;
         break;
-      case 'professional':
-        currentPage = <PageProfessional setPage={setPage} />;
+      case 'team':
+        currentPage = <PageTeam setPage={setPage} />;
         break;
       case 'victory':
         currentPage = <PageVictory setPage={setPage} />;
