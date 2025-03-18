@@ -28,12 +28,22 @@ export const PageChallenge = ({ setPage }: PageProps) => {
           {questions[currentLevel - 1]?.question}
         </text>
 
-        // TODO: The answers depends on the level.
-        <hstack gap="medium">
-          <button size="medium">USA</button>
-          <button size="medium">Canada</button>
-          <button size="medium">India</button>
-        </hstack>
+        {questions[currentLevel - 1]?.answers ? (
+          <hstack gap="medium">
+            {questions[currentLevel - 1].answers.map((answer, index) => (
+              <button key={index} size="medium" onPress={() => {
+                if (currentLevel < totalLevels) {
+                  setCurrentLevel(currentLevel + 1);
+                } else {
+                  setPage('victory');
+                }
+              }}>
+                {answer}
+              </button>
+            ))}
+          </hstack>
+        ) : null}
+
         <hstack gap="medium">
           <button onPress={() => {setCurrentLevel(1); setPage('welcome');}}>Restart Game</button>
           <button onPress={() => {setCurrentLevel(currentLevel + 1); setPage('challenge');}}>Answer(temp)</button>
