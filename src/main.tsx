@@ -5,7 +5,7 @@ import {PageTeam} from '@pages/PageTeam.js';
 import {PageChallenge} from '@pages/PageChallenge.js';
 import {PageVictory} from '@pages/PageVictory.js';
 import {questions} from '@utils/questions.js';
-import { sendInvitation } from '@utils/sendInvitation.js';
+import {sendInvitation} from '@utils/sendInvitation.js';
 
 Devvit.configure({
   redditAPI: true,
@@ -56,8 +56,8 @@ Devvit.addCustomPostType({
     let currentPage;
     switch (page) {
       case 'welcome':
-        currentPage = <PageWelcome 
-                        setPage={setPage} 
+        currentPage = <PageWelcome
+                        setPage={setPage}
                         specialists={specialists}
                         onInvite={handleInvite}
                       />;
@@ -66,14 +66,18 @@ Devvit.addCustomPostType({
         currentPage = <PageChallenge setPage={setPage} />;
         break;
       case 'team':
-        currentPage = <PageTeam setPage={setPage} specialists={specialists} />;
+        currentPage = <PageTeam
+                        setPage={setPage}
+                        specialists={specialists}
+                        onInvite={handleInvite}
+                      />;
         break;
       case 'victory':
         currentPage = <PageVictory setPage={setPage} />;
         break;
       default:
         currentPage = <PageWelcome 
-                        setPage={setPage} 
+                        setPage={setPage}
                         specialists={specialists}
                         onInvite={handleInvite}
                       />;

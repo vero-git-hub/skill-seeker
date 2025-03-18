@@ -12,7 +12,7 @@ export const PageVictory = ({ setPage }: PageProps) => (
     <text size="xxlarge" color="white">🎉 Victory 🎉</text>
     <text size="large" color="white">Congratulations! Your team of professionals has won.</text>
     <hstack gap="medium">
-      <button onPress={() => setPage('welcome')}>Start Again</button>
+      <button onPress={() => setPage('welcome')}>Restart Game</button>
     </hstack>
   </vstack>
 );

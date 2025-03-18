@@ -17,7 +17,7 @@ export const PageChallenge = ({ setPage }: PageProps) => (
       <button size="medium">India</button>
     </hstack>
     <hstack gap="medium">
-      <button onPress={() => setPage('welcome')}>Start Again</button>
+      <button onPress={() => setPage('welcome')}>Restart Game</button>
       <button onPress={() => setPage('victory')}>Victory(temp)</button>
     </hstack>
   </vstack>
