@@ -1,10 +1,16 @@
 // pages/PageChallenge.tsx
-import {Devvit, useState} from '@devvit/public-api'
-import {PageProps} from '@utils/types.js'
+import {Devvit, useState} from '@devvit/public-api';
+import {PageProps} from '@utils/types.js';
+import {questions} from '@utils/questions.js';
 
 export const PageChallenge = ({ setPage }: PageProps) => {
   const [currentLevel, setCurrentLevel] = useState(1);
-  const totalLevels = 5;
+  const totalLevels = questions.length;
+  const professional = 'redditor';
+
+  if (currentLevel > totalLevels) {
+    setPage('victory');
+  }
 
   return (
       <vstack
@@ -16,11 +22,13 @@ export const PageChallenge = ({ setPage }: PageProps) => {
       >
         <text size="xxlarge">🏆 Challenge 🏆</text>
 
-        <text size="large">Level {currentLevel} / {totalLevels}. Question for a redditor:</text>
+        <text size="large">{`Level ${currentLevel} of ${totalLevels}. Question for ${professional}`}:</text>
 
-        // TODO: The question depends on the level.
+        <text size="large">
+          {questions[currentLevel - 1]?.question}
+        </text>
 
-        <text size="large">In what country was Reddit created?</text>
+        // TODO: The answers depends on the level.
         <hstack gap="medium">
           <button size="medium">USA</button>
           <button size="medium">Canada</button>
