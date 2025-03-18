@@ -5,7 +5,7 @@ import {PageTeam} from '@pages/PageTeam.js';
 import {PageChallenge} from '@pages/PageChallenge.js';
 import {PageVictory} from '@pages/PageVictory.js';
 import {questions} from '@utils/questions.js';
-import {sendInvitation} from '@utils/sendInvitation.js';
+import {createInviteForm} from '@utils/inviteForm.js';
 
 Devvit.configure({
   redditAPI: true,
@@ -21,32 +21,7 @@ Devvit.addCustomPostType({
 
     const postLink = `https://www.reddit.com/r/${subredditName}/comments/${postId}`;
 
-    const inviteForm = useForm(
-      {
-        fields: [
-          {
-            type: "string",
-            name: "inviteUsername",
-            label: "Enter Reddit username to invite:",
-          },
-        ],
-      },
-      async (values) => {
-        const username = values.inviteUsername;
-        if (!username) {
-          console.error("❌ Please enter a username.");
-          return;
-        }
-
-        if (!reddit.sendPrivateMessage) {
-          console.error("❌ `sendPrivateMessage` is not available on `reddit`.");
-          return;
-        }
-
-        await sendInvitation(reddit, username, postLink);
-        console.log("✅ Invitation sent!");
-      }
-    );
+    const inviteForm = createInviteForm(useForm, reddit, postLink);
 
     function handleInvite() {
       console.log("📩 Showing invite form...");
