@@ -6,7 +6,9 @@ import {questions} from '@utils/questions.js';
 export const PageChallenge = ({ setPage }: PageProps) => {
   const [currentLevel, setCurrentLevel] = useState(0);
   const totalLevels = questions.length - 1;
+  const currentQuestion = questions[currentLevel];
   const professional = questions[currentLevel]?.requiredSpecialist || "unknown specialist";
+  const correctAnswer = currentQuestion?.correct;
 
   if (currentLevel > totalLevels) {
     setPage('victory');
@@ -32,6 +34,9 @@ export const PageChallenge = ({ setPage }: PageProps) => {
           <hstack gap="medium">
             {questions[currentLevel].answers.map((answer, index) => (
               <button key={index} size="medium" onPress={() => {
+                console.log(`✅ Correct Answer: ${correctAnswer}`);
+                console.log(`📝 Selected Answer: ${answer}`);
+
                 if (currentLevel < totalLevels) {
                   setCurrentLevel(currentLevel + 1);
                 } else {
@@ -46,8 +51,6 @@ export const PageChallenge = ({ setPage }: PageProps) => {
 
         <hstack gap="medium">
           <button onPress={() => {setCurrentLevel(0); setPage('welcome');}}>Restart Game</button>
-          <button onPress={() => setCurrentLevel(currentLevel + 1)}>Answer(temp)</button>
-          <button onPress={() => setPage('victory')}>Victory(temp)</button>
         </hstack>
       </vstack>
     );
