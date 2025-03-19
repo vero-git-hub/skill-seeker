@@ -21,7 +21,7 @@ export const questions = [
   },
   {
     question:
-      "What type of trap is most commonly used under a kitchen sink with a garbage disposal?",
+      "What trap is commonly used under a kitchen sink with a garbage disposal?",
     answers: ["Flexible trap", "P-trap", "Bottle trap"],
     correct: "Bottle trap",
     requiredSpecialist: "plumber",
