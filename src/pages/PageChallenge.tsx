@@ -1,10 +1,13 @@
 // pages/PageChallenge.tsx
-import {Devvit, useState} from '@devvit/public-api';
+import {Devvit, useState, useInterval} from '@devvit/public-api';
 import {PageProps} from '@utils/types.js';
 import {questions} from '@utils/questions.js';
 
 export const PageChallenge = ({ setPage }: PageProps) => {
   const [currentLevel, setCurrentLevel] = useState(0);
+  const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
+  const [shouldAdvance, setShouldAdvance] = useState(false);
+
   const totalLevels = questions.length - 1;
   const currentQuestion = questions[currentLevel];
   const professional = currentQuestion?.requiredSpecialist || "unknown specialist";
@@ -13,6 +16,21 @@ export const PageChallenge = ({ setPage }: PageProps) => {
   if (currentLevel > totalLevels) {
     setPage('victory');
   }
+
+  const navigationInterval = useInterval(() => {
+    if (shouldAdvance) {
+      setShouldAdvance(false);
+      setSelectedAnswer(null);
+      if (currentLevel < totalLevels) {
+        setCurrentLevel(currentLevel + 1);
+      } else {
+        setPage('victory');
+      }
+      navigationInterval.stop();
+    }
+  }, 1000);
+
+  navigationInterval.start();
 
   return (
     <vstack
@@ -23,31 +41,41 @@ export const PageChallenge = ({ setPage }: PageProps) => {
       backgroundColor="pink"
     >
       <text size="xxlarge">🏆 Challenge 🏆</text>
-
       <text size="large">{`Level ${currentLevel + 1} of ${totalLevels + 1}. Question for ${professional}`}:</text>
-
-      <text size="large">
-        {currentQuestion?.question || "🎉 Congratulations! You've completed the game!"}
-      </text>
+      <text size="large">{currentQuestion?.question || "🎉 Congratulations! You've completed the game!"}</text>
 
       {currentQuestion?.answers ? (
         <hstack gap="medium">
-          {currentQuestion.answers.map((answer, index) => (
-            <button key={index} size="medium" onPress={() => {
-              console.log(`✅ Correct Answer: ${correctAnswer}`);
-              console.log(`📝 Selected Answer: ${answer}`);
+          {currentQuestion.answers.map((answer, index) => {
+            let buttonAppearance: "secondary" | "destructive" | "success" = "secondary";
 
-              if(answer == correctAnswer) {
-                if (currentLevel < totalLevels) {
-                  setCurrentLevel(currentLevel + 1);
-                } else {
-                  setPage('victory');
-                }
+            if (selectedAnswer) {
+              if (answer === correctAnswer) {
+                buttonAppearance = "secondary";
+              } else if (answer === selectedAnswer) {
+                buttonAppearance = "destructive";
               }
-            }}>
-              {answer}
-            </button>
-          ))}
+            }
+
+            return (
+              <button
+                key={index}
+                size="medium"
+                appearance={buttonAppearance}
+                disabled={shouldAdvance}
+                onPress={() => {
+                  if (shouldAdvance) return;
+                  setSelectedAnswer(answer);
+
+                  if (answer === correctAnswer) {
+                    setShouldAdvance(true);
+                  }
+                }}
+              >
+                {answer}
+              </button>
+            );
+          })}
         </hstack>
       ) : null}
 
