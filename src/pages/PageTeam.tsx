@@ -15,15 +15,18 @@ export const PageTeam = ({setPage, specialists, onInvite}: PageProps & {
     <text size="xxlarge" color="white">🎯 Team 🎯</text>
     <vstack gap="small">
       {specialists.map((spec, index) => (
-        <text key={index} size="small" color="white">
+        <text key={index.toString()} size="small" color="white">
           {`${index + 1}️⃣ ${spec.toUpperCase()} - `}
         </text>
       ))}
+      
+      <text size="small" color="white">Write in the comment: /join [profession_number]. Example: /join 7</text>
+
+      <hstack gap="small" alignment="middle center">
+        <button onPress={() => setPage('welcome')}>⬅️ Restart</button>
+        <button onPress={onInvite}>📩 Invite</button>
+        <button onPress={() => setPage('challenge')}>Continue ➡️</button>
+      </hstack>
     </vstack>
-    <hstack gap="small">
-      <button onPress={() => setPage('welcome')}>Restart Game</button>
-      <button onPress={onInvite}>📩 Invite Player</button>
-      <button onPress={() => setPage('challenge')}>Continue</button>
-    </hstack>
   </vstack>
 );

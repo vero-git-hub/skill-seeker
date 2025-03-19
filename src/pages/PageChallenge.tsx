@@ -30,8 +30,6 @@ export const PageChallenge = ({ setPage }: PageProps) => {
     }
   }, 1000);
 
-  navigationInterval.start();
-
   return (
     <vstack
       width="100%"
@@ -59,7 +57,7 @@ export const PageChallenge = ({ setPage }: PageProps) => {
 
             return (
               <button
-                key={index}
+                key={index.toString()}
                 size="medium"
                 appearance={buttonAppearance}
                 disabled={shouldAdvance}
@@ -69,6 +67,7 @@ export const PageChallenge = ({ setPage }: PageProps) => {
 
                   if (answer === correctAnswer) {
                     setShouldAdvance(true);
+                    navigationInterval.start();
                   }
                 }}
               >
@@ -79,9 +78,7 @@ export const PageChallenge = ({ setPage }: PageProps) => {
         </hstack>
       ) : null}
 
-      <hstack gap="medium">
-        <button onPress={() => {setCurrentLevel(0); setPage('welcome');}}>Restart Game</button>
-      </hstack>
+      <button onPress={() => {setCurrentLevel(0); setPage('welcome');}}>🏠 Restart</button>
     </vstack>
   );
 };
