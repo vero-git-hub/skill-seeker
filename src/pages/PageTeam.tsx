@@ -17,9 +17,13 @@ export const PageTeam = ({setPage, specialists, onInvite, reddit, postId}: PageP
       const commentsListing = await reddit.getComments({postId});
 
       for await (const comment of commentsListing) {
-        console.log(`💬 Found comment: ${comment.body}`);
-      }
+        const commentBody = comment.body;
+        const authorName = comment.authorName;
 
+        if (commentBody.toLowerCase().includes("!join")) {
+          console.log(`💬 Found !join comment: ${commentBody} by ${authorName}`);
+        }
+      }
     }, 5000);
 
   interval.start();
