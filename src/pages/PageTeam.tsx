@@ -12,7 +12,7 @@ export const PageTeam = ({setPage, specialists, onInvite, reddit, postId}: PageP
 
   const teamMembers = new Map<string, string>();
   specialists.forEach(profession => {
-    teamMembers.set(profession, "Waiting...");
+    teamMembers.set(profession.toLowerCase(), "Waiting...");
   });
 
   const interval = useInterval(async () => {
@@ -60,9 +60,9 @@ export const PageTeam = ({setPage, specialists, onInvite, reddit, postId}: PageP
     >
       <text size="xxlarge" color="white">🎯 Team 🎯</text>
       <vstack gap="small">
-        {specialists.map((spec, index) => (
+        {[...teamMembers.keys()].map((profession, index) => (
           <text key={index.toString()} size="small" color="white">
-            {`${index + 1}️⃣ ${spec.toUpperCase()} - `}
+            {`${index + 1}️⃣ ${profession.toUpperCase()} - `}
           </text>
         ))}
         
