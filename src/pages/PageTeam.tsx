@@ -1,6 +1,6 @@
 // pages/PageTeam.tsx
-import {Devvit, useInterval} from '@devvit/public-api'
-import {PageProps} from '@utils/types.js'
+import {Devvit, useInterval, useState} from '@devvit/public-api';
+import {PageProps} from '@utils/types.js';
 
 export const PageTeam = ({setPage, specialists, onInvite, reddit, postId}: PageProps & {
   specialists: string[];
@@ -10,10 +10,9 @@ export const PageTeam = ({setPage, specialists, onInvite, reddit, postId}: PageP
 }) => {
   const monitoring = true;
 
-  const teamMembers = new Map<string, string>();
-  specialists.forEach(profession => {
-    teamMembers.set(profession.toLowerCase(), "Waiting...");
-  });
+  const [teamMembers, setTeamMembers] = useState<Record<string, string>>(
+    Object.fromEntries(specialists.map(profession => [profession.toLowerCase(), "Waiting..."]))
+  );
 
   const interval = useInterval(async () => {
       if (!monitoring) return;
@@ -32,13 +31,16 @@ export const PageTeam = ({setPage, specialists, onInvite, reddit, postId}: PageP
           if (match) {
             const profession = match[1].toLowerCase();
 
-            if (teamMembers.has(profession)) {
-              if (teamMembers.get(profession) === "Waiting...") {
-                teamMembers.set(profession, authorName);
+            if (profession in teamMembers) {
+              if (teamMembers[profession] === "Waiting...") {
+                setTeamMembers(prevTeam => ({
+                  ...prevTeam,
+                  [profession]: authorName,
+                }));
+
                 console.log(`✅ ${authorName} joined as ${profession}`);
-                console.log("📊 Updated teamMembers:", [...teamMembers.entries()]);
               } else {
-                console.log(`⚠️ ${profession} is already taken by ${teamMembers.get(profession)}`);
+                console.log(`⚠️ ${profession} is already taken by ${teamMembers[profession]}`);
               }
             } else {
               console.log(`❌  ${profession} is not a valid role.`);
@@ -60,9 +62,9 @@ export const PageTeam = ({setPage, specialists, onInvite, reddit, postId}: PageP
     >
       <text size="xxlarge" color="white">🎯 Team 🎯</text>
       <vstack gap="small">
-        {[...teamMembers.keys()].map((profession, index) => (
+        {Object.entries(teamMembers).map(([profession, player], index) => (
           <text key={index.toString()} size="small" color="white">
-            {`${index + 1}️⃣ ${profession.toUpperCase()} - `}
+            {`${index + 1}️⃣ ${profession.toUpperCase()} - ${player}`}
           </text>
         ))}
         
@@ -76,4 +78,4 @@ export const PageTeam = ({setPage, specialists, onInvite, reddit, postId}: PageP
       </vstack>
     </vstack>
   );
-}
+};
