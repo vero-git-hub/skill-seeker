@@ -15,6 +15,7 @@ Devvit.addCustomPostType({
   name: 'SkillSeeker',
   render: context => {
     const {useState, useForm, reddit, subredditName, postId} = context;
+    const safePostId = postId ?? "";
     const [page, setPage] = useState('welcome');
 
     const specialists = [...new Set(questions.map(q => q.requiredSpecialist))];
@@ -45,6 +46,8 @@ Devvit.addCustomPostType({
                         setPage={setPage}
                         specialists={specialists}
                         onInvite={handleInvite}
+                        reddit={reddit}
+                        postId={safePostId}
                       />;
         break;
       case 'victory':
