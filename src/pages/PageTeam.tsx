@@ -14,6 +14,8 @@ export const PageTeam = ({setPage, specialists, onInvite, reddit, postId}: PageP
     Object.fromEntries(specialists.map(profession => [profession.toLowerCase(), "Waiting..."]))
   );
 
+  const [allJoined, setAllJoined] = useState(false);
+
   const interval = useInterval(async () => {
       if (!monitoring) return;
 
@@ -35,11 +37,12 @@ export const PageTeam = ({setPage, specialists, onInvite, reddit, postId}: PageP
               if (teamMembers[profession] === "Waiting...") {
                 setTeamMembers(prev => {
                   const updated = { ...prev, [profession]: authorName };
-                  const allJoined = Object.values(updated).every(name => name !== "Waiting...");
+                  const everyoneReady = Object.values(updated).every(name => name !== "Waiting...");
   
-                  if (allJoined) {
+                  if (everyoneReady) {
                     interval.stop();
                     setMonitoring(false);
+                    setAllJoined(true);
                     console.log("🛑 All roles filled. Monitoring stopped.");
                   }
   
@@ -70,14 +73,12 @@ export const PageTeam = ({setPage, specialists, onInvite, reddit, postId}: PageP
     >
       <text size="xxlarge" color="white">🎯 Team 🎯</text>
       <vstack gap="small">
+        <text size="small" color="white">Write in the comment: /join [profession].</text>
         {Object.entries(teamMembers).map(([profession, player], index) => (
           <text key={index.toString()} size="small" color="white">
             {`${index + 1}️⃣ ${profession.toUpperCase()} - ${player}`}
           </text>
         ))}
-        
-        <text size="small" color="white">Write in the comment: /join [profession].</text>
-
         <hstack gap="small" alignment="middle center">
           <button
             onPress={() => {
@@ -93,6 +94,7 @@ export const PageTeam = ({setPage, specialists, onInvite, reddit, postId}: PageP
               interval.stop();
               setPage('challenge');
             }}
+            disabled={!allJoined}
           >
             Continue ➡️
           </button>
