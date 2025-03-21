@@ -8,6 +8,8 @@ export function createInviteForm(
 ) {
   return useForm(
       {
+        title: "Invite a Player",
+        cancelLabel: "Close",
         fields: [
           {
             type: "string",
