@@ -8,7 +8,7 @@ export const PageTeam = ({setPage, specialists, onInvite, reddit, postId}: PageP
   reddit: any;
   postId: string;
 }) => {
-  const monitoring = true;
+  const [monitoring, setMonitoring] = useState(true);
 
   const [teamMembers, setTeamMembers] = useState<Record<string, string>>(
     Object.fromEntries(specialists.map(profession => [profession.toLowerCase(), "Waiting..."]))
@@ -33,10 +33,18 @@ export const PageTeam = ({setPage, specialists, onInvite, reddit, postId}: PageP
 
             if (profession in teamMembers) {
               if (teamMembers[profession] === "Waiting...") {
-                setTeamMembers(prevTeam => ({
-                  ...prevTeam,
-                  [profession]: authorName,
-                }));
+                setTeamMembers(prev => {
+                  const updated = { ...prev, [profession]: authorName };
+                  const allJoined = Object.values(updated).every(name => name !== "Waiting...");
+  
+                  if (allJoined) {
+                    interval.stop();
+                    setMonitoring(false);
+                    console.log("🛑 All roles filled. Monitoring stopped.");
+                  }
+  
+                  return updated;
+                });
 
                 console.log(`✅ ${authorName} joined as ${profession}`);
               } else {
@@ -71,9 +79,23 @@ export const PageTeam = ({setPage, specialists, onInvite, reddit, postId}: PageP
         <text size="small" color="white">Write in the comment: /join [profession].</text>
 
         <hstack gap="small" alignment="middle center">
-          <button onPress={() => setPage('welcome')}>⬅️ Restart</button>
+          <button
+            onPress={() => {
+              interval.stop();
+              setPage('welcome');
+            }}
+          >
+            ⬅️ Restart
+          </button>
           <button onPress={onInvite}>📩 Invite</button>
-          <button onPress={() => setPage('challenge')}>Continue ➡️</button>
+          <button
+            onPress={() => {
+              interval.stop();
+              setPage('challenge');
+            }}
+          >
+            Continue ➡️
+          </button>
         </hstack>
       </vstack>
     </vstack>
