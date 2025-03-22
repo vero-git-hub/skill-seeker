@@ -42,7 +42,11 @@ Devvit.addCustomPostType({
                       />;
         break;
       case 'challenge':
-        currentPage = <PageChallenge setPage={setPage} />;
+        currentPage = <PageChallenge
+                        setPage={setPage}
+                        teamMembers={teamMembers}
+                        reddit={reddit}
+                      />;
         break;
       case 'team':
         currentPage = <PageTeam

@@ -1,17 +1,35 @@
 // pages/PageChallenge.tsx
-import {Devvit, useState, useInterval} from '@devvit/public-api';
+import {Devvit, useState, useInterval, useAsync} from '@devvit/public-api';
 import {PageProps} from '@utils/types.js';
 import {questions} from '@utils/questions.js';
 
-export const PageChallenge = ({ setPage }: PageProps) => {
+export const PageChallenge = ({
+  setPage,
+  teamMembers,
+  reddit,
+}: PageProps & {
+  teamMembers: Record<string, string>;
+  reddit: any;
+}) => {
   const [currentLevel, setCurrentLevel] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [shouldAdvance, setShouldAdvance] = useState(false);
 
   const totalLevels = questions.length - 1;
   const currentQuestion = questions[currentLevel];
-  const professional = currentQuestion?.requiredSpecialist || "unknown specialist";
   const correctAnswer = currentQuestion?.correct;
+
+  const professional = currentQuestion?.requiredSpecialist || "unknown specialist";
+  const assignedPlayer = teamMembers[professional.toLowerCase()];
+
+  const {data: currentUser} = useAsync(async () => {
+    const username = await reddit.getCurrentUsername();
+    return username;
+  });
+
+  const isUserAllowed =
+    currentUser && assignedPlayer &&
+    currentUser.toLowerCase() === assignedPlayer.toLowerCase();
 
   if (currentLevel > totalLevels) {
     setPage('victory');
@@ -39,7 +57,7 @@ export const PageChallenge = ({ setPage }: PageProps) => {
       backgroundColor="pink"
     >
       <text size="xxlarge">🏆 Challenge 🏆</text>
-      <text size="large">{`Level ${currentLevel + 1} of ${totalLevels + 1}. Question for ${professional}`}:</text>
+      <text size="large">{`Level ${currentLevel + 1} of ${totalLevels + 1}. Question for ${professional} -> ${assignedPlayer}`}:</text>
       <text size="large">{currentQuestion?.question || "🎉 Congratulations! You've completed the game!"}</text>
 
       {currentQuestion?.answers ? (
@@ -60,9 +78,9 @@ export const PageChallenge = ({ setPage }: PageProps) => {
                 key={index.toString()}
                 size="medium"
                 appearance={buttonAppearance}
-                disabled={shouldAdvance}
+                disabled={!isUserAllowed || shouldAdvance}
                 onPress={() => {
-                  if (shouldAdvance) return;
+                  if (!isUserAllowed || shouldAdvance) return;
                   setSelectedAnswer(answer);
 
                   if (answer === correctAnswer) {
