@@ -57,8 +57,15 @@ export const PageChallenge = ({
       backgroundColor="pink"
     >
       <text size="xxlarge">🏆 Challenge 🏆</text>
-      <text size="large">{`Level ${currentLevel + 1} of ${totalLevels + 1}. Question for ${professional} -> ${assignedPlayer}`}:</text>
-      <text size="large">{currentQuestion?.question || "🎉 Congratulations! You've completed the game!"}</text>
+      <vstack gap="small" alignment="middle center">
+        <text size="medium">{`Level ${currentLevel + 1} of ${totalLevels + 1}. Question for ${professional}`}</text>
+        <text size="large">{currentQuestion?.question || "🎉 Congratulations! You've completed the game!"}</text>
+        <text size="small" color="red">
+          {isUserAllowed
+            ? `✅ It's your turn, ${currentUser}!`
+            : `⛔ Only ${assignedPlayer} can answer this question.`}
+        </text>
+      </vstack>
 
       {currentQuestion?.answers ? (
         <hstack gap="medium">
