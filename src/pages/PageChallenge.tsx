@@ -31,6 +31,21 @@ export const PageChallenge = ({
     currentUser && assignedPlayer &&
     currentUser.toLowerCase() === assignedPlayer.toLowerCase();
 
+  if (!currentUser || !assignedPlayer) {
+    return (
+      <vstack
+        width="100%"
+        height="100%"
+        alignment="center middle"
+        backgroundColor="pink"
+        gap="large"
+      >
+        <text size="xxlarge">🏃‍♀️ Loading...</text>
+        <text size="medium">Fetching player info...</text>
+      </vstack>
+    );
+  }
+
   if (currentLevel > totalLevels) {
     setPage('victory');
   }
