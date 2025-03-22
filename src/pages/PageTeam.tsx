@@ -2,18 +2,21 @@
 import {Devvit, useInterval, useState} from '@devvit/public-api';
 import {PageProps} from '@utils/types.js';
 
-export const PageTeam = ({setPage, specialists, onInvite, reddit, postId}: PageProps & {
-  specialists: string[];
+export const PageTeam = ({
+  setPage, onInvite, reddit, postId,
+  teamMembers, setTeamMembers
+}: PageProps & {
   onInvite: () => void;
   reddit: any;
   postId: string;
+  teamMembers: Record<string, string>;
+  setTeamMembers: (
+    teamOrUpdater:
+      | Record<string, string>
+      | ((prev: Record<string, string>) => Record<string, string>)
+  ) => void;
 }) => {
   const [monitoring, setMonitoring] = useState(true);
-
-  const [teamMembers, setTeamMembers] = useState<Record<string, string>>(
-    Object.fromEntries(specialists.map(profession => [profession.toLowerCase(), "Waiting..."]))
-  );
-
   const [allJoined, setAllJoined] = useState(false);
 
   const interval = useInterval(async () => {
@@ -45,11 +48,10 @@ export const PageTeam = ({setPage, specialists, onInvite, reddit, postId}: PageP
                     setAllJoined(true);
                     console.log("🛑 All roles filled. Monitoring stopped.");
                   }
-  
+
+                  console.log(`✅ ${authorName} joined as ${profession}`);
                   return updated;
                 });
-
-                console.log(`✅ ${authorName} joined as ${profession}`);
               } else {
                 console.log(`⚠️ ${profession} is already taken by ${teamMembers[profession]}`);
               }

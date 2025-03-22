@@ -20,8 +20,11 @@ Devvit.addCustomPostType({
 
     const specialists = [...new Set(questions.map(q => q.requiredSpecialist))];
 
-    const postLink = `https://www.reddit.com/r/${subredditName}/comments/${postId}`;
+    const [teamMembers, setTeamMembers] = useState<Record<string, string>>(
+      Object.fromEntries(specialists.map(profession => [profession.toLowerCase(), "Waiting..."]))
+    );
 
+    const postLink = `https://www.reddit.com/r/${subredditName}/comments/${postId}`;
     const inviteForm = createInviteForm(useForm, reddit, postLink);
 
     function handleInvite() {
@@ -44,10 +47,11 @@ Devvit.addCustomPostType({
       case 'team':
         currentPage = <PageTeam
                         setPage={setPage}
-                        specialists={specialists}
                         onInvite={handleInvite}
                         reddit={reddit}
                         postId={safePostId}
+                        teamMembers={teamMembers}
+                        setTeamMembers={setTeamMembers}
                       />;
         break;
       case 'victory':
