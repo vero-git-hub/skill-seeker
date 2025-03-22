@@ -4,6 +4,7 @@ import {PageWelcome} from '@pages/PageWelcome.js';
 import {PageTeam} from '@pages/PageTeam.js';
 import {PageChallenge} from '@pages/PageChallenge.js';
 import {PageVictory} from '@pages/PageVictory.js';
+import {PageDefeat} from '@pages/PageDefeat.js';
 import {questions} from '@utils/questions.js';
 import {createInviteForm} from '@utils/inviteForm.js';
 
@@ -60,6 +61,9 @@ Devvit.addCustomPostType({
         break;
       case 'victory':
         currentPage = <PageVictory setPage={setPage} />;
+        break;
+      case 'defeat':
+        currentPage = <PageDefeat setPage={setPage} />;
         break;
       default:
         currentPage = <PageWelcome 

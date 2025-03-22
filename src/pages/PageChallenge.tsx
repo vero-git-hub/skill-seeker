@@ -93,6 +93,8 @@ export const PageChallenge = ({
                   if (answer === correctAnswer) {
                     setShouldAdvance(true);
                     navigationInterval.start();
+                  } else {
+                    setPage('defeat');
                   }
                 }}
               >
