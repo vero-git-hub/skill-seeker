@@ -10,12 +10,13 @@ import {createInviteForm} from '@utils/inviteForm.js';
 
 Devvit.configure({
   redditAPI: true,
+  realtime: true,
 });
 
 Devvit.addCustomPostType({
   name: 'SkillSeeker',
   render: context => {
-    const {useState, useForm, reddit, subredditName, postId} = context;
+    const {useState, useForm, reddit, subredditName, postId, useChannel} = context;
     const safePostId = postId ?? "";
     const [page, setPage] = useState('welcome');
 
@@ -24,6 +25,19 @@ Devvit.addCustomPostType({
     const [teamMembers, setTeamMembers] = useState<Record<string, string>>(
       Object.fromEntries(specialists.map(profession => [profession.toLowerCase(), "Waiting..."]))
     );
+
+    const pageChannel = useChannel({
+      name: 'page_sync',
+      onMessage: (newPage: string) => {
+        setPage(newPage);
+      }
+    });
+    pageChannel.subscribe();
+
+    function updatePage(newPage: string) {
+      context.realtime.send('page_sync', newPage);
+      setPage(newPage);
+    }
 
     const postLink = `https://www.reddit.com/r/${subredditName}/comments/${postId}`;
     const inviteForm = createInviteForm(useForm, reddit, postLink);
@@ -48,21 +62,21 @@ Devvit.addCustomPostType({
     switch (page) {
       case 'welcome':
         currentPage = <PageWelcome
-          setPage={setPage}
+          setPage={updatePage}
           specialists={specialists}
           onInvite={handleInvite}
         />;
         break;
       case 'challenge':
         currentPage = <PageChallenge
-          setPage={setPage}
+          setPage={updatePage}
           reddit={reddit}
           teamMembers={teamMembers}
         />;
         break;
       case 'team':
         currentPage = <PageTeam
-          setPage={setPage}
+          setPage={updatePage}
           onInvite={handleInvite}
           reddit={reddit}
           postId={safePostId}
@@ -73,19 +87,19 @@ Devvit.addCustomPostType({
         break;
       case 'victory':
         currentPage = <PageVictory
-          setPage={setPage}
+          setPage={updatePage}
           onRestart={handleRestart}
         />;
         break;
       case 'defeat':
         currentPage = <PageDefeat
-          setPage={setPage}
+          setPage={updatePage}
           onRestart={handleRestart}
         />;
         break;
       default:
         currentPage = <PageWelcome 
-          setPage={setPage}
+          setPage={updatePage}
           specialists={specialists}
           onInvite={handleInvite}
         />;
