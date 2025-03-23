@@ -33,44 +33,59 @@ Devvit.addCustomPostType({
       context.ui.showForm(inviteForm);
     }
 
+    function resetTeamMembers(): Record<string, string> {
+      return Object.fromEntries(
+        specialists.map((profession) => [profession.toLowerCase(), "Waiting..."])
+      );
+    }
+
     let currentPage;
     switch (page) {
       case 'welcome':
         currentPage = <PageWelcome
-                        setPage={setPage}
-                        specialists={specialists}
-                        onInvite={handleInvite}
-                      />;
+          setPage={setPage}
+          specialists={specialists}
+          onInvite={handleInvite}
+        />;
         break;
       case 'challenge':
         currentPage = <PageChallenge
-                        setPage={setPage}
-                        teamMembers={teamMembers}
-                        reddit={reddit}
-                      />;
+          setPage={setPage}
+          reddit={reddit}
+          teamMembers={teamMembers}
+        />;
         break;
       case 'team':
         currentPage = <PageTeam
-                        setPage={setPage}
-                        onInvite={handleInvite}
-                        reddit={reddit}
-                        postId={safePostId}
-                        teamMembers={teamMembers}
-                        setTeamMembers={setTeamMembers}
-                      />;
+          setPage={setPage}
+          onInvite={handleInvite}
+          reddit={reddit}
+          postId={safePostId}
+          teamMembers={teamMembers}
+          setTeamMembers={setTeamMembers}
+          resetTeamMembers={resetTeamMembers}
+        />;
         break;
       case 'victory':
-        currentPage = <PageVictory setPage={setPage} />;
+        currentPage = <PageVictory
+          setPage={setPage}
+          setTeamMembers={setTeamMembers}
+          resetTeamMembers={resetTeamMembers}
+        />;
         break;
       case 'defeat':
-        currentPage = <PageDefeat setPage={setPage} />;
+        currentPage = <PageDefeat
+          setPage={setPage}
+          setTeamMembers={setTeamMembers}
+          resetTeamMembers={resetTeamMembers}
+        />;
         break;
       default:
         currentPage = <PageWelcome 
-                        setPage={setPage}
-                        specialists={specialists}
-                        onInvite={handleInvite}
-                      />;
+          setPage={setPage}
+          specialists={specialists}
+          onInvite={handleInvite}
+        />;
     }
 
     return (

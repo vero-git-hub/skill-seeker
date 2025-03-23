@@ -5,11 +5,11 @@ import {questions} from '@utils/questions.js';
 
 export const PageChallenge = ({
   setPage,
-  teamMembers,
   reddit,
+  teamMembers,
 }: PageProps & {
-  teamMembers: Record<string, string>;
   reddit: any;
+  teamMembers: Record<string, string>;
 }) => {
   const [currentLevel, setCurrentLevel] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
@@ -119,8 +119,6 @@ export const PageChallenge = ({
           })}
         </hstack>
       ) : null}
-
-      <button onPress={() => {setCurrentLevel(0); setPage('welcome');}}>🏠 Restart</button>
     </vstack>
   );
 };

@@ -4,7 +4,7 @@ import {PageProps} from '@utils/types.js';
 
 export const PageTeam = ({
   setPage, onInvite, reddit, postId,
-  teamMembers, setTeamMembers
+  teamMembers, setTeamMembers, resetTeamMembers
 }: PageProps & {
   onInvite: () => void;
   reddit: any;
@@ -15,6 +15,7 @@ export const PageTeam = ({
       | Record<string, string>
       | ((prev: Record<string, string>) => Record<string, string>)
   ) => void;
+  resetTeamMembers: () => Record<string, string>;
 }) => {
   const [monitoring, setMonitoring] = useState(true);
   const [allJoined, setAllJoined] = useState(false);
@@ -85,6 +86,7 @@ export const PageTeam = ({
           <button
             onPress={() => {
               interval.stop();
+              setTeamMembers(resetTeamMembers());
               setPage('welcome');
             }}
           >
