@@ -3,8 +3,13 @@ import {Devvit, useInterval, useState} from '@devvit/public-api';
 import {PageProps} from '@utils/types.js';
 
 export const PageTeam = ({
-  setPage, onInvite, reddit, postId,
-  teamMembers, setTeamMembers, resetTeamMembers
+  setPage,
+  onInvite,
+  reddit,
+  postId,
+  teamMembers,
+  setTeamMembers,
+  onRestart,
 }: PageProps & {
   onInvite: () => void;
   reddit: any;
@@ -15,7 +20,7 @@ export const PageTeam = ({
       | Record<string, string>
       | ((prev: Record<string, string>) => Record<string, string>)
   ) => void;
-  resetTeamMembers: () => Record<string, string>;
+  onRestart: () => void;
 }) => {
   const [monitoring, setMonitoring] = useState(true);
   const [allJoined, setAllJoined] = useState(false);
@@ -86,8 +91,7 @@ export const PageTeam = ({
           <button
             onPress={() => {
               interval.stop();
-              setTeamMembers(resetTeamMembers());
-              setPage('welcome');
+              onRestart();
             }}
           >
             ⬅️ Restart

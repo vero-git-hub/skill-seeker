@@ -2,14 +2,10 @@ import {Devvit} from '@devvit/public-api'
 import {PageProps} from '@utils/types.js'
 
 export const PageVictory = ({
-  setPage, setTeamMembers, resetTeamMembers
+  setPage,
+  onRestart,
 }: PageProps & {
-  setTeamMembers: (
-    teamOrUpdater:
-      | Record<string, string>
-      | ((prev: Record<string, string>) => Record<string, string>)
-  ) => void;
-  resetTeamMembers: () => Record<string, string>;
+  onRestart: () => void;
 }) => (
   <vstack
     width="100%"
@@ -22,10 +18,7 @@ export const PageVictory = ({
     <text size="large" color="white">Congratulations! Your team of professionals has won.</text>
     <hstack gap="medium">
       <button
-        onPress={() => {
-          setTeamMembers(resetTeamMembers());
-          setPage('welcome');
-        }}
+        onPress={onRestart}
       >
         Restart Game
       </button>

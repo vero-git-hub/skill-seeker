@@ -39,6 +39,11 @@ Devvit.addCustomPostType({
       );
     }
 
+    function handleRestart() {
+      setTeamMembers(resetTeamMembers());
+      setPage('welcome');
+    }
+
     let currentPage;
     switch (page) {
       case 'welcome':
@@ -63,21 +68,19 @@ Devvit.addCustomPostType({
           postId={safePostId}
           teamMembers={teamMembers}
           setTeamMembers={setTeamMembers}
-          resetTeamMembers={resetTeamMembers}
+          onRestart={handleRestart}
         />;
         break;
       case 'victory':
         currentPage = <PageVictory
           setPage={setPage}
-          setTeamMembers={setTeamMembers}
-          resetTeamMembers={resetTeamMembers}
+          onRestart={handleRestart}
         />;
         break;
       case 'defeat':
         currentPage = <PageDefeat
           setPage={setPage}
-          setTeamMembers={setTeamMembers}
-          resetTeamMembers={resetTeamMembers}
+          onRestart={handleRestart}
         />;
         break;
       default:
