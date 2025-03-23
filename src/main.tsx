@@ -26,17 +26,25 @@ Devvit.addCustomPostType({
       Object.fromEntries(specialists.map(profession => [profession.toLowerCase(), "Waiting..."]))
     );
 
+    const validPages = ['welcome', 'team', 'challenge', 'victory', 'defeat'];
+
     const pageChannel = useChannel({
       name: 'page_sync',
       onMessage: (newPage: string) => {
-        setPage(newPage);
+        if (validPages.includes(newPage)) {
+          setPage(newPage);
+        } else {
+          console.warn("❗ Invalid page received via realtime:", newPage);
+        }
       }
     });
     pageChannel.subscribe();
 
     function updatePage(newPage: string) {
-      context.realtime.send('page_sync', newPage);
-      setPage(newPage);
+      if (newPage !== page) {
+        context.realtime.send('page_sync', newPage);
+        setPage(newPage);
+      }
     }
 
     const postLink = `https://www.reddit.com/r/${subredditName}/comments/${postId}`;
