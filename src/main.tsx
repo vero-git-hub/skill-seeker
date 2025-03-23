@@ -40,15 +40,20 @@ Devvit.addCustomPostType({
     });
     pageChannel.subscribe();
 
-    function updatePage(newPage: string) {
-      if (newPage !== page) {
-        context.realtime.send('page_sync', newPage);
-        setPage(newPage);
-      }
-    }
-
     const postLink = `https://www.reddit.com/r/${subredditName}/comments/${postId}`;
     const inviteForm = createInviteForm(useForm, reddit, postLink);
+
+    const [currentLevel, setCurrentLevel] = useState(0);
+
+    const levelChannel = useChannel({
+      name: 'level_sync',
+      onMessage: (newLevel: number) => {
+        if (newLevel <= questions.length - 1) {
+          setCurrentLevel(newLevel);
+        }
+      }
+    });
+    levelChannel.subscribe();
 
     function handleInvite() {
       console.log("📩 Showing invite form...");
@@ -63,7 +68,19 @@ Devvit.addCustomPostType({
 
     function handleRestart() {
       setTeamMembers(resetTeamMembers());
-      setPage('welcome');
+      updatePage('welcome');
+    }
+
+    function updatePage(newPage: string) {
+      if (newPage !== page) {
+        context.realtime.send('page_sync', newPage);
+        setPage(newPage);
+      }
+    }
+
+    function updateLevel(newLevel: number) {
+      context.realtime.send('level_sync', newLevel);
+      setCurrentLevel(newLevel);
     }
 
     let currentPage;
@@ -80,6 +97,8 @@ Devvit.addCustomPostType({
           setPage={updatePage}
           reddit={reddit}
           teamMembers={teamMembers}
+          currentLevel={currentLevel}
+          setCurrentLevel={updateLevel}
         />;
         break;
       case 'team':

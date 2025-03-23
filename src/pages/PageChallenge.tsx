@@ -7,11 +7,14 @@ export const PageChallenge = ({
   setPage,
   reddit,
   teamMembers,
+  currentLevel,
+  setCurrentLevel,
 }: PageProps & {
   reddit: any;
   teamMembers: Record<string, string>;
+  currentLevel: number;
+  setCurrentLevel: (level: number) => void;
 }) => {
-  const [currentLevel, setCurrentLevel] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [shouldAdvance, setShouldAdvance] = useState(false);
 
@@ -44,10 +47,6 @@ export const PageChallenge = ({
         <text size="medium">Fetching player info...</text>
       </vstack>
     );
-  }
-
-  if (currentLevel > totalLevels) {
-    setPage('victory');
   }
 
   const navigationInterval = useInterval(() => {
