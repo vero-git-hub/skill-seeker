@@ -44,20 +44,18 @@ export const PageTeam = ({
 
             if (profession in teamMembers) {
               if (teamMembers[profession] === "Waiting...") {
-                setTeamMembers(prev => {
-                  const updated = { ...prev, [profession]: authorName };
-                  const everyoneReady = Object.values(updated).every(name => name !== "Waiting...");
-  
-                  if (everyoneReady) {
-                    interval.stop();
-                    setMonitoring(false);
-                    setAllJoined(true);
-                    console.log("🛑 All roles filled. Monitoring stopped.");
-                  }
+                const updated = {...teamMembers, [profession]: authorName};
+                const everyoneReady = Object.values(updated).every(name => name !== "Waiting...");
 
-                  console.log(`✅ ${authorName} joined as ${profession}`);
-                  return updated;
-                });
+                if (everyoneReady) {
+                  interval.stop();
+                  setMonitoring(false);
+                  setAllJoined(true);
+                  console.log("🛑 All roles filled. Monitoring stopped.");
+                }
+
+                console.log(`✅ ${authorName} joined as ${profession}`);
+                setTeamMembers(updated);
               } else {
                 console.log(`⚠️ ${profession} is already taken by ${teamMembers[profession]}`);
               }
