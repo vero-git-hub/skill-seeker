@@ -2,9 +2,11 @@
 import {Devvit} from '@devvit/public-api';
 import {PageProps} from '@utils/types.js';
 
-export const PageWelcome = ({setPage}: PageProps & {
-  specialists: string[];
-  onInvite: () => void;
+export const PageWelcome = ({
+  setPage,
+  onShowLeaderboard,
+}: PageProps & {
+  onShowLeaderboard: () => void;
 }) => {
   return (
     <vstack
@@ -22,6 +24,7 @@ export const PageWelcome = ({setPage}: PageProps & {
 
       <hstack gap="medium">
         <button onPress={() => setPage('team')}>Go to Team ➡️</button>
+        <button onPress={onShowLeaderboard}>🏆 Leaderboard</button>
       </hstack>
     </vstack>
   );

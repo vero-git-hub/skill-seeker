@@ -7,6 +7,7 @@ import {PageVictory} from '@pages/PageVictory.js';
 import {PageDefeat} from '@pages/PageDefeat.js';
 import {questions} from '@utils/questions.js';
 import {createInviteForm} from '@utils/inviteForm.js';
+import {PageLeaderboard} from '@pages/PageLeaderboard.js';
 
 Devvit.configure({
   redditAPI: true,
@@ -19,14 +20,20 @@ Devvit.addCustomPostType({
     const {useState, useForm, reddit, subredditName, postId, useChannel} = context;
     const safePostId = postId ?? "";
     const [page, setPage] = useState('welcome');
-
+    
     const specialists = [...new Set(questions.map(q => q.requiredSpecialist))];
-
     const [teamMembers, setTeamMembers] = useState<Record<string, string>>(
       Object.fromEntries(specialists.map(profession => [profession.toLowerCase(), "Waiting..."]))
     );
 
-    const validPages = ['welcome', 'team', 'challenge', 'victory', 'defeat'];
+    const validPages = ['welcome', 'team', 'challenge', 'victory', 'defeat', 'leaderboard'];
+
+    const postLink = `https://www.reddit.com/r/${subredditName}/comments/${postId}`;
+    const inviteForm = createInviteForm(useForm, reddit, postLink);
+
+    const [currentLevel, setCurrentLevel] = useState(0);
+
+    const [leaderboard, setLeaderboard] = useState<{ member: string, score: number }[]>([]);
 
     const pageChannel = useChannel({
       name: 'page_sync',
@@ -39,11 +46,6 @@ Devvit.addCustomPostType({
       }
     });
     pageChannel.subscribe();
-
-    const postLink = `https://www.reddit.com/r/${subredditName}/comments/${postId}`;
-    const inviteForm = createInviteForm(useForm, reddit, postLink);
-
-    const [currentLevel, setCurrentLevel] = useState(0);
 
     const levelChannel = useChannel({
       name: 'level_sync',
@@ -92,13 +94,35 @@ Devvit.addCustomPostType({
       setCurrentLevel(newLevel);
     }
 
+    async function updateLeaderboard() {
+      for (const player of Object.values(teamMembers)) {
+        if (player !== "Waiting...") {
+          await context.redis.zIncrBy('leaderboard', player, 1);
+        }
+      }
+    }
+
+    async function getLeaderboard(context: Devvit.Context): Promise<{ member: string, score: number }[]> {
+      const top = await context.redis.zRange('leaderboard', 0, 9, {
+        reverse: true,
+        by: 'rank',
+      });
+    
+      return top;
+    }
+
+    async function showLeaderboard() {
+      const top = await getLeaderboard(context);
+      setLeaderboard(top);
+      updatePage('leaderboard');
+    }
+
     let currentPage;
     switch (page) {
       case 'welcome':
         currentPage = <PageWelcome
           setPage={updatePage}
-          specialists={specialists}
-          onInvite={handleInvite}
+          onShowLeaderboard={showLeaderboard}
         />;
         break;
       case 'challenge':
@@ -125,6 +149,7 @@ Devvit.addCustomPostType({
         currentPage = <PageVictory
           setPage={updatePage}
           onRestart={handleRestart}
+          onVictory={updateLeaderboard}
         />;
         break;
       case 'defeat':
@@ -133,11 +158,16 @@ Devvit.addCustomPostType({
           onRestart={handleRestart}
         />;
         break;
+      case 'leaderboard':
+        currentPage = <PageLeaderboard
+          setPage={updatePage}
+          leaderboard={leaderboard}
+        />;
+        break;
       default:
         currentPage = <PageWelcome 
           setPage={updatePage}
-          specialists={specialists}
-          onInvite={handleInvite}
+          onShowLeaderboard={showLeaderboard}
         />;
     }
 
