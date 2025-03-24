@@ -22,9 +22,7 @@ Devvit.addCustomPostType({
     const [page, setPage] = useState('welcome');
     
     const specialists = [...new Set(questions.map(q => q.requiredSpecialist))];
-    const [teamMembers, setTeamMembers] = useState<Record<string, string>>(
-      Object.fromEntries(specialists.map(profession => [profession.toLowerCase(), "Waiting..."]))
-    );
+    const [teamMembers, setTeamMembers] = useState<Record<string, string>>(createEmptyTeam());
 
     const validPages = ['welcome', 'team', 'challenge', 'victory', 'defeat', 'leaderboard'];
 
@@ -58,7 +56,7 @@ Devvit.addCustomPostType({
     const resetTeamChannel = useChannel({
       name: 'reset_team',
       onMessage: () => {
-        setTeamMembers(resetTeamMembers());
+        setTeamMembers(createEmptyTeam());
       }
     });
     resetTeamChannel.subscribe();
@@ -68,15 +66,16 @@ Devvit.addCustomPostType({
       context.ui.showForm(inviteForm);
     }
 
-    function resetTeamMembers(): Record<string, string> {
+    function createEmptyTeam(): Record<string, string> {
       return Object.fromEntries(
-        specialists.map((profession) => [profession.toLowerCase(), "Waiting..."])
+        specialists.map(profession => [profession.toLowerCase(), "Waiting..."])
       );
     }
 
     function handleRestart() {
       context.realtime.send('reset_team', true);
-      setTeamMembers(resetTeamMembers());
+      context.realtime.send('level_sync', 0);
+      setTeamMembers(createEmptyTeam());
       setCurrentLevel(0);
       updatePage('welcome');
     }
