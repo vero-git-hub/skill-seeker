@@ -5,9 +5,10 @@ import {PageTeam} from '@pages/PageTeam.js';
 import {PageChallenge} from '@pages/PageChallenge.js';
 import {PageVictory} from '@pages/PageVictory.js';
 import {PageDefeat} from '@pages/PageDefeat.js';
+import {PageLeaderboard} from '@pages/PageLeaderboard.js';
 import {questions} from '@utils/questions.js';
 import {createInviteForm} from '@utils/inviteForm.js';
-import {PageLeaderboard} from '@pages/PageLeaderboard.js';
+import {getLeaderboard} from '@utils/leaderboard.js';
 
 Devvit.configure({
   redditAPI: true,
@@ -32,8 +33,6 @@ Devvit.addCustomPostType({
     const inviteForm = createInviteForm(useForm, reddit, postLink);
 
     const [currentLevel, setCurrentLevel] = useState(0);
-
-    const [leaderboard, setLeaderboard] = useState<{ member: string, score: number }[]>([]);
 
     const pageChannel = useChannel({
       name: 'page_sync',
@@ -95,25 +94,18 @@ Devvit.addCustomPostType({
     }
 
     async function updateLeaderboard() {
-      for (const player of Object.values(teamMembers)) {
+      try {
+        for (const player of Object.values(teamMembers)) {
         if (player !== "Waiting...") {
           await context.redis.zIncrBy('leaderboard', player, 1);
         }
       }
-    }
-
-    async function getLeaderboard(context: Devvit.Context): Promise<{ member: string, score: number }[]> {
-      const top = await context.redis.zRange('leaderboard', 0, 9, {
-        reverse: true,
-        by: 'rank',
-      });
-    
-      return top;
+      } catch (error) {
+        console.error('❗ Error updating leaderboard:', error);
+      }
     }
 
     async function showLeaderboard() {
-      const top = await getLeaderboard(context);
-      setLeaderboard(top);
       updatePage('leaderboard');
     }
 
@@ -161,7 +153,7 @@ Devvit.addCustomPostType({
       case 'leaderboard':
         currentPage = <PageLeaderboard
           setPage={updatePage}
-          leaderboard={leaderboard}
+          devvitContext={context}
         />;
         break;
       default:
