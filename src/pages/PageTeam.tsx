@@ -1,6 +1,7 @@
 // pages/PageTeam.tsx
 import {Devvit, useInterval, useState} from '@devvit/public-api';
-import {PageProps} from '@utils/types.js';
+import {PageProps, Question} from '@utils/types.js';
+import {pickRandomQuestions} from '@utils/questions.js';
 
 export const PageTeam = ({
   setPage,
@@ -10,6 +11,10 @@ export const PageTeam = ({
   teamMembers,
   setTeamMembers,
   onRestart,
+  selectedQuestions,
+  setSelectedQuestions,
+  setSpecialists,
+  context
 }: PageProps & {
   onInvite: () => void;
   reddit: any;
@@ -21,9 +26,29 @@ export const PageTeam = ({
       | ((prev: Record<string, string>) => Record<string, string>)
   ) => void;
   onRestart: () => void;
+  selectedQuestions: Question[] | null;
+  setSelectedQuestions: (q: Question[]) => void;
+  setSpecialists: (s: string[]) => void;
+  context: any;
 }) => {
   const [monitoring, setMonitoring] = useState(true);
   const [allJoined, setAllJoined] = useState(false);
+
+  if (!selectedQuestions) {
+    console.log("⚙️ Initializing game from PageTeam...");
+  
+    const newSet = pickRandomQuestions(5);
+    const newSpecs = [...new Set(newSet.map(q => q.requiredSpecialist))];
+  
+    context.realtime.send('question_set', newSet);
+    context.realtime.send('specialists_sync', newSpecs);
+  
+    setSelectedQuestions(newSet);
+    setSpecialists(newSpecs);
+    setTeamMembers(
+      Object.fromEntries(newSpecs.map(spec => [spec.toLowerCase(), "Waiting..."]))
+    );
+  }  
 
   const interval = useInterval(async () => {
       if (!monitoring) return;

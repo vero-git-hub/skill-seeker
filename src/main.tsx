@@ -6,7 +6,7 @@ import {PageChallenge} from '@pages/PageChallenge.js';
 import {PageVictory} from '@pages/PageVictory.js';
 import {PageDefeat} from '@pages/PageDefeat.js';
 import {PageLeaderboard} from '@pages/PageLeaderboard.js';
-import {questions} from '@utils/questions.js';
+import {pickRandomQuestions} from '@utils/questions.js';
 import {createInviteForm} from '@utils/inviteForm.js';
 import {Question} from '@utils/types.js';
 
@@ -15,28 +15,22 @@ Devvit.configure({
   realtime: true,
 });
 
-function pickRandomQuestions(count: number) {
-  const shuffled = [...questions].sort(() => Math.random() - 0.5);
-  return shuffled.slice(0, count);
-}
-
 Devvit.addCustomPostType({
   name: 'SkillSeeker',
   render: context => {
     const {useState, useForm, reddit, subredditName, postId, useChannel} = context;
     const safePostId = postId ?? "";
     const [page, setPage] = useState('welcome');
-    const [selectedQuestions, setSelectedQuestions] = useState<Question[]>(() => pickRandomQuestions(5));
-    
-    const specialists = [...new Set(selectedQuestions.map(q => q.requiredSpecialist))];
-    const [teamMembers, setTeamMembers] = useState<Record<string, string>>(createEmptyTeam());
 
-    const validPages = ['welcome', 'team', 'challenge', 'victory', 'defeat', 'leaderboard'];
-
-    const postLink = `https://www.reddit.com/r/${subredditName}/comments/${postId}`;
-    const inviteForm = createInviteForm(useForm, reddit, postLink);
+    const [selectedQuestions, setSelectedQuestions] = useState<Question[] | null>(null);
+    const [specialists, setSpecialists] = useState<string[]>([]);
+    const [teamMembers, setTeamMembers] = useState<Record<string, string>>({});
 
     const [currentLevel, setCurrentLevel] = useState(0);
+
+    const validPages = ['welcome', 'team', 'challenge', 'victory', 'defeat', 'leaderboard'];
+    const postLink = `https://www.reddit.com/r/${subredditName}/comments/${postId}`;
+    const inviteForm = createInviteForm(useForm, reddit, postLink);
 
     const pageChannel = useChannel({
       name: 'page_sync',
@@ -53,7 +47,7 @@ Devvit.addCustomPostType({
     const levelChannel = useChannel({
       name: 'level_sync',
       onMessage: (newLevel: number) => {
-        if (newLevel <= selectedQuestions.length - 1) {
+        if (selectedQuestions && newLevel <= selectedQuestions.length - 1) {
           setCurrentLevel(newLevel);
         }
       }
@@ -63,7 +57,7 @@ Devvit.addCustomPostType({
     const resetTeamChannel = useChannel({
       name: 'reset_team',
       onMessage: () => {
-        setTeamMembers(createEmptyTeam());
+        setTeamMembers(createEmptyTeam(specialists));
       }
     });
     resetTeamChannel.subscribe();
@@ -72,6 +66,9 @@ Devvit.addCustomPostType({
       name: 'question_set',
       onMessage: (newQuestions: Question[]) => {
         setSelectedQuestions(newQuestions);
+        const newSpecialists = [...new Set(newQuestions.map((q) => q.requiredSpecialist))];
+        setSpecialists(newSpecialists);
+        setTeamMembers(createEmptyTeam(newSpecialists));
         setCurrentLevel(0);
       }
     });
@@ -82,19 +79,24 @@ Devvit.addCustomPostType({
       context.ui.showForm(inviteForm);
     }
 
-    function createEmptyTeam(): Record<string, string> {
+    function createEmptyTeam(specList: string[]): Record<string, string> {
       return Object.fromEntries(
-        specialists.map(profession => [profession.toLowerCase(), "Waiting..."])
+        specList.map(profession => [profession.toLowerCase(), "Waiting..."])
       );
     }
 
     function handleRestart() {
       const newSet = pickRandomQuestions(5);
+      const newSpecialists = [...new Set(newSet.map(q => q.requiredSpecialist))];
+
       context.realtime.send('reset_team', true);
       context.realtime.send('level_sync', 0);
       context.realtime.send('question_set', newSet);
-      setTeamMembers(createEmptyTeam());
+      context.realtime.send('specialists_sync', newSpecialists);
+
+      setTeamMembers(createEmptyTeam(newSpecialists));
       setSelectedQuestions(newSet);
+      setSpecialists(newSpecialists);
       setCurrentLevel(0);
       updatePage('welcome');
     }
@@ -130,7 +132,7 @@ Devvit.addCustomPostType({
           teamMembers={teamMembers}
           currentLevel={currentLevel}
           setCurrentLevel={updateLevel}
-          questions={selectedQuestions}
+          questions={selectedQuestions!}
         />;
         break;
       case 'team':
@@ -142,6 +144,10 @@ Devvit.addCustomPostType({
           teamMembers={teamMembers}
           setTeamMembers={setTeamMembers}
           onRestart={handleRestart}
+          selectedQuestions={selectedQuestions}
+          setSelectedQuestions={setSelectedQuestions}
+          setSpecialists={setSpecialists}
+          context={context}
         />;
         break;
       case 'victory':
