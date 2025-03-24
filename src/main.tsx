@@ -8,7 +8,6 @@ import {PageDefeat} from '@pages/PageDefeat.js';
 import {PageLeaderboard} from '@pages/PageLeaderboard.js';
 import {questions} from '@utils/questions.js';
 import {createInviteForm} from '@utils/inviteForm.js';
-import {getLeaderboard} from '@utils/leaderboard.js';
 
 Devvit.configure({
   redditAPI: true,
@@ -76,8 +75,8 @@ Devvit.addCustomPostType({
     }
 
     function handleRestart() {
-      context.realtime.send('reset_team', true);
       setTeamMembers(resetTeamMembers());
+      setCurrentLevel(0);
       updatePage('welcome');
     }
 
@@ -91,18 +90,6 @@ Devvit.addCustomPostType({
     function updateLevel(newLevel: number) {
       context.realtime.send('level_sync', newLevel);
       setCurrentLevel(newLevel);
-    }
-
-    async function updateLeaderboard() {
-      try {
-        for (const player of Object.values(teamMembers)) {
-        if (player !== "Waiting...") {
-          await context.redis.zIncrBy('leaderboard', player, 1);
-        }
-      }
-      } catch (error) {
-        console.error('❗ Error updating leaderboard:', error);
-      }
     }
 
     async function showLeaderboard() {
@@ -141,7 +128,6 @@ Devvit.addCustomPostType({
         currentPage = <PageVictory
           setPage={updatePage}
           onRestart={handleRestart}
-          onVictory={updateLeaderboard}
         />;
         break;
       case 'defeat':

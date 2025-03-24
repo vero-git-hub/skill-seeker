@@ -5,13 +5,9 @@ import {PageProps} from '@utils/types.js'
 export const PageVictory = ({
   setPage,
   onRestart,
-  onVictory,
 }: PageProps & {
   onRestart: () => void;
-  onVictory: () => Promise<void>;
 }) => {
-  onVictory();
-
   return (
     <vstack
       width="100%"
