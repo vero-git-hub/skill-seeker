@@ -1,7 +1,7 @@
 // pages/PageChallenge.tsx
 import {Devvit, useState, useInterval, useAsync} from '@devvit/public-api';
 import {PageProps} from '@utils/types.js';
-import {questions} from '@utils/questions.js';
+import {Question} from '@utils/types.js';
 
 export const PageChallenge = ({
   setPage,
@@ -9,11 +9,13 @@ export const PageChallenge = ({
   teamMembers,
   currentLevel,
   setCurrentLevel,
+  questions,
 }: PageProps & {
   reddit: any;
   teamMembers: Record<string, string>;
   currentLevel: number;
   setCurrentLevel: (level: number) => void;
+  questions: Question[];
 }) => {
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [shouldAdvance, setShouldAdvance] = useState(false);

@@ -8,11 +8,17 @@ import {PageDefeat} from '@pages/PageDefeat.js';
 import {PageLeaderboard} from '@pages/PageLeaderboard.js';
 import {questions} from '@utils/questions.js';
 import {createInviteForm} from '@utils/inviteForm.js';
+import {Question} from '@utils/types.js';
 
 Devvit.configure({
   redditAPI: true,
   realtime: true,
 });
+
+function pickRandomQuestions(count: number) {
+  const shuffled = [...questions].sort(() => Math.random() - 0.5);
+  return shuffled.slice(0, count);
+}
 
 Devvit.addCustomPostType({
   name: 'SkillSeeker',
@@ -20,8 +26,9 @@ Devvit.addCustomPostType({
     const {useState, useForm, reddit, subredditName, postId, useChannel} = context;
     const safePostId = postId ?? "";
     const [page, setPage] = useState('welcome');
+    const [selectedQuestions, setSelectedQuestions] = useState<Question[]>(() => pickRandomQuestions(5));
     
-    const specialists = [...new Set(questions.map(q => q.requiredSpecialist))];
+    const specialists = [...new Set(selectedQuestions.map(q => q.requiredSpecialist))];
     const [teamMembers, setTeamMembers] = useState<Record<string, string>>(createEmptyTeam());
 
     const validPages = ['welcome', 'team', 'challenge', 'victory', 'defeat', 'leaderboard'];
@@ -46,7 +53,7 @@ Devvit.addCustomPostType({
     const levelChannel = useChannel({
       name: 'level_sync',
       onMessage: (newLevel: number) => {
-        if (newLevel <= questions.length - 1) {
+        if (newLevel <= selectedQuestions.length - 1) {
           setCurrentLevel(newLevel);
         }
       }
@@ -61,6 +68,15 @@ Devvit.addCustomPostType({
     });
     resetTeamChannel.subscribe();
 
+    const questionChannel = useChannel({
+      name: 'question_set',
+      onMessage: (newQuestions: Question[]) => {
+        setSelectedQuestions(newQuestions);
+        setCurrentLevel(0);
+      }
+    });
+    questionChannel.subscribe();
+
     function handleInvite() {
       console.log("📩 Showing invite form...");
       context.ui.showForm(inviteForm);
@@ -73,9 +89,12 @@ Devvit.addCustomPostType({
     }
 
     function handleRestart() {
+      const newSet = pickRandomQuestions(5);
       context.realtime.send('reset_team', true);
       context.realtime.send('level_sync', 0);
+      context.realtime.send('question_set', newSet);
       setTeamMembers(createEmptyTeam());
+      setSelectedQuestions(newSet);
       setCurrentLevel(0);
       updatePage('welcome');
     }
@@ -111,6 +130,7 @@ Devvit.addCustomPostType({
           teamMembers={teamMembers}
           currentLevel={currentLevel}
           setCurrentLevel={updateLevel}
+          questions={selectedQuestions}
         />;
         break;
       case 'team':
