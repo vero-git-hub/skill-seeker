@@ -55,6 +55,14 @@ Devvit.addCustomPostType({
     });
     levelChannel.subscribe();
 
+    const resetTeamChannel = useChannel({
+      name: 'reset_team',
+      onMessage: () => {
+        setTeamMembers(resetTeamMembers());
+      }
+    });
+    resetTeamChannel.subscribe();
+
     function handleInvite() {
       console.log("📩 Showing invite form...");
       context.ui.showForm(inviteForm);
@@ -67,6 +75,7 @@ Devvit.addCustomPostType({
     }
 
     function handleRestart() {
+      context.realtime.send('reset_team', true);
       setTeamMembers(resetTeamMembers());
       updatePage('welcome');
     }
