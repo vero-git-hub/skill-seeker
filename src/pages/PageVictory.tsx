@@ -1,13 +1,25 @@
 // pages/PageVictory.tsx
-import {Devvit} from '@devvit/public-api'
-import {PageProps} from '@utils/types.js'
+import {Devvit, useAsync} from '@devvit/public-api';
+import {PageProps} from '@utils/types.js';
 
 export const PageVictory = ({
   setPage,
   onRestart,
+  devvitContext,
 }: PageProps & {
   onRestart: () => void;
+  devvitContext: Devvit.Context;
 }) => {
+  useAsync(async () => {
+    const username = await devvitContext.reddit.getCurrentUsername();
+    if (username) {
+      console.log(`🏅 Add a point for ${username}`);
+      await devvitContext.redis.zIncrBy('leaderboard', username, 1);
+    }
+  
+    return true;
+  });
+
   return (
     <vstack
       width="100%"

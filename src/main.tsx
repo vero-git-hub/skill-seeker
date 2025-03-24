@@ -75,6 +75,7 @@ Devvit.addCustomPostType({
     }
 
     function handleRestart() {
+      context.realtime.send('reset_team', true);
       setTeamMembers(resetTeamMembers());
       setCurrentLevel(0);
       updatePage('welcome');
@@ -128,6 +129,7 @@ Devvit.addCustomPostType({
         currentPage = <PageVictory
           setPage={updatePage}
           onRestart={handleRestart}
+          devvitContext={context}
         />;
         break;
       case 'defeat':
