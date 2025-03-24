@@ -130,6 +130,7 @@ Devvit.addCustomPostType({
           setPage={updatePage}
           onRestart={handleRestart}
           devvitContext={context}
+          teamMembers={teamMembers}
         />;
         break;
       case 'defeat':

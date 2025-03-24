@@ -6,15 +6,24 @@ export const PageVictory = ({
   setPage,
   onRestart,
   devvitContext,
+  teamMembers,
 }: PageProps & {
   onRestart: () => void;
   devvitContext: Devvit.Context;
+  teamMembers: Record<string, string>;
 }) => {
   useAsync(async () => {
     const username = await devvitContext.reddit.getCurrentUsername();
-    if (username) {
-      console.log(`🏅 Add a point for ${username}`);
+
+    const isPlayerInTeam = Object.values(teamMembers).some(
+      member => member.toLowerCase() === username?.toLowerCase()
+    );
+
+    if (username && isPlayerInTeam) {
+      console.log(`🏅 ${username} — team member - 1 point`);
       await devvitContext.redis.zIncrBy('leaderboard', username, 1);
+    } else {
+      console.log(`🚫 ${username} not on team - no point awarded`);
     }
   
     return true;
