@@ -134,7 +134,7 @@ export const questions = [
     question: "Which programming language is primarily used for data analysis?",
     answers: ["Ruby", "R", "C++"],
     correct: "R",
-    requiredSpecialist: "data analyst",
+    requiredSpecialist: "analyst",
   },
   {
     question: "What is the main function of white blood cells?",
@@ -170,7 +170,7 @@ export const questions = [
     question: "Who wrote the play 'Romeo and Juliet'?",
     answers: ["Shakespeare", "Dickens", "Hemingway"],
     correct: "Shakespeare",
-    requiredSpecialist: "literature expert",
+    requiredSpecialist: "philologist",
   },
   {
     question: "What is the primary medium used in watercolor painting?",
@@ -200,7 +200,7 @@ export const questions = [
     question: "Which metal has the highest electrical conductivity?",
     answers: ["Gold", "Silver", "Copper"],
     correct: "Silver",
-    requiredSpecialist: "materials engineer",
+    requiredSpecialist: "engineer",
   },
   {
     question: "What is a haiku?",
