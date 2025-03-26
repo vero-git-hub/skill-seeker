@@ -94,6 +94,7 @@ Devvit.addCustomPostType({
           gameState={gameState}
           updateGameState={updateGameState}
           onShowLeaderboard={showLeaderboard}
+          onInvite={handleInvite}
         />;
     switch (page) {
       case 'welcome':
@@ -105,7 +106,6 @@ Devvit.addCustomPostType({
           updateGameState={updateGameState}
           reddit={reddit}
           postId={safePostId}
-          onInvite={handleInvite}
           onRestart={handleRestart}
         />;
         break;

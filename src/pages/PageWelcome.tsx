@@ -7,8 +7,10 @@ export const PageWelcome = ({
   gameState,
   updateGameState,
   onShowLeaderboard,
+  onInvite,
 }: PageProps & {
   onShowLeaderboard: () => void;
+  onInvite: () => void;
 }) => {
   return (
     <zstack height="100%" width="100%">
@@ -32,8 +34,9 @@ export const PageWelcome = ({
         </vstack>
 
         <hstack gap="medium">
-          <button onPress={() => updateGameState({page: 'team'})}>Go to Team ➡️</button>
           <button onPress={onShowLeaderboard}>🏆 Leaderboard</button>
+          <button onPress={onInvite}>📩 Invite</button>
+          <button onPress={() => updateGameState({page: 'team'})}>Go to Team ➡️</button>
         </hstack>
       </vstack>
     </zstack>

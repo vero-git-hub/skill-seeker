@@ -8,12 +8,10 @@ export const PageTeam = ({
   updateGameState,
   reddit,
   postId,
-  onInvite,
   onRestart,
 }: PageProps & {
   reddit: any;
   postId: string;
-  onInvite: () => void;
   onRestart: () => void;
 }) => {
   const {teamMembers} = gameState;
@@ -65,6 +63,8 @@ export const PageTeam = ({
 
   interval.start();
 
+  const everyoneReady = Object.values(teamMembers).every(name => name !== "Waiting...");
+
   return (
     <zstack height="100%" width="100%">
       <BackgroundImage url="bg_team.png" description="PageTeam Background" />
@@ -98,13 +98,12 @@ export const PageTeam = ({
           >
             ⬅️ Restart
           </button>
-          <button onPress={onInvite}>📩 Invite</button>
           <button
             onPress={() => {
               interval.stop();
               updateGameState({page: 'challenge'});
             }}
-            disabled={!allJoined}
+            disabled={!everyoneReady}
           >
             Continue ➡️
           </button>
