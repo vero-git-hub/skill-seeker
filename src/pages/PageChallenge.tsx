@@ -2,6 +2,7 @@
 import {Devvit, useState, useInterval, useAsync} from '@devvit/public-api';
 import {PageProps} from '@utils/types.js';
 import {Question} from '@utils/types.js';
+import {BackgroundImage} from "@components/Image.js";
 
 export const PageChallenge = ({
   setPage,
@@ -65,61 +66,71 @@ export const PageChallenge = ({
   }, 1000);
 
   return (
-    <vstack
-      width="100%"
-      height="100%"
-      alignment="middle center"
-      gap="large"
-      backgroundColor="pink"
-    >
-      <text size="xxlarge">🏆 Challenge 🏆</text>
-      <vstack gap="small" alignment="middle center">
-        <text size="medium">{`Level ${currentLevel + 1} of ${totalLevels + 1}. Question for ${professional}`}</text>
-        <text size="large" alignment="middle center" wrap>{currentQuestion?.question || "🎉 Congratulations! You've completed the game!"}</text>
-        <text size="small" color="red">
-          {isUserAllowed
-            ? `✅ It's your turn, ${currentUser}!`
-            : `⛔ Only ${assignedPlayer} can answer this question.`}
-        </text>
-      </vstack>
+    <zstack height="100%" width="100%">
+          <BackgroundImage url="bg_challenge.png" description="PageChallenge Background" />
+      <vstack
+        width="100%"
+        height="100%"
+        alignment="middle center"
+        gap="large"
+      >
+        <vstack
+          gap="medium"
+          alignment="middle center"
+          padding="medium"
+          cornerRadius="large"
+          backgroundColor="rgba(0, 0, 0, 0.8)"
+         >
+          <text size="xxlarge" color="white">🏆 Challenge 🏆</text>
+          <vstack gap="small" alignment="middle center">
+            <text size="medium" color="white">{`Level ${currentLevel + 1} of ${totalLevels + 1}. Question for ${professional}`}</text>
+            <text size="large" alignment="middle center" weight="bold" color="white" wrap>{currentQuestion?.question || "🎉 Congratulations! You've completed the game!"}</text>
+            <text size="small" color="red">
+              {isUserAllowed
+                ? `✅ It's your turn, ${currentUser}!`
+                : `⛔ Only ${assignedPlayer} can answer this question.`}
+            </text>
+          </vstack>
 
-      {currentQuestion?.answers ? (
-        <hstack gap="medium">
-          {currentQuestion.answers.map((answer, index) => {
-            let buttonAppearance: "secondary" | "destructive" | "success" = "secondary";
+          {currentQuestion?.answers ? (
+            <hstack gap="medium">
+              {currentQuestion.answers.map((answer, index) => {
+                let buttonAppearance: "secondary" | "destructive" | "success" = "secondary";
 
-            if (selectedAnswer) {
-              if (answer === correctAnswer) {
-                buttonAppearance = "secondary";
-              } else if (answer === selectedAnswer) {
-                buttonAppearance = "destructive";
-              }
-            }
-
-            return (
-              <button
-                key={index.toString()}
-                size="medium"
-                appearance={buttonAppearance}
-                disabled={!isUserAllowed || shouldAdvance}
-                onPress={() => {
-                  if (!isUserAllowed || shouldAdvance) return;
-                  setSelectedAnswer(answer);
-
+                if (selectedAnswer) {
                   if (answer === correctAnswer) {
-                    setShouldAdvance(true);
-                    navigationInterval.start();
-                  } else {
-                    setPage('defeat');
+                    buttonAppearance = "secondary";
+                  } else if (answer === selectedAnswer) {
+                    buttonAppearance = "destructive";
                   }
-                }}
-              >
-                {answer}
-              </button>
-            );
-          })}
-        </hstack>
-      ) : null}
-    </vstack>
+                }
+
+                return (
+                  <button
+                    key={index.toString()}
+                    size="medium"
+                    appearance={buttonAppearance}
+                    disabled={!isUserAllowed || shouldAdvance}
+                    onPress={() => {
+                      if (!isUserAllowed || shouldAdvance) return;
+                      setSelectedAnswer(answer);
+
+                      if (answer === correctAnswer) {
+                        setShouldAdvance(true);
+                        navigationInterval.start();
+                      } else {
+                        setPage('defeat');
+                      }
+                    }}
+                  >
+                    {answer}
+                  </button>
+                );
+              })}
+            </hstack>
+          ) : null}
+        </vstack>
+      </vstack>
+    </zstack>
   );
 };

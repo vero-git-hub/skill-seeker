@@ -2,6 +2,7 @@
 import {Devvit, useInterval, useState} from '@devvit/public-api';
 import {PageProps, Question} from '@utils/types.js';
 import {pickRandomQuestions} from '@utils/questions.js';
+import {BackgroundImage} from "@components/Image.js";
 
 export const PageTeam = ({
   setPage,
@@ -95,22 +96,30 @@ export const PageTeam = ({
   interval.start();
 
   return (
-    <vstack
-      width="100%"
-      height="100%"
-      alignment="middle center"
-      gap="large"
-      backgroundColor="green"
-    >
-      <text size="xxlarge" color="white">🎯 Team 🎯</text>
-      <vstack gap="small">
-        <text size="small" color="white">Write in the comment: /join [profession].</text>
-        {Object.entries(teamMembers).map(([profession, player], index) => (
-          <text key={index.toString()} size="small" color="white">
-            {`${index + 1}️⃣ ${profession.toUpperCase()} - ${player}`}
-          </text>
-        ))}
-        <hstack gap="small" alignment="middle center">
+    <zstack height="100%" width="100%">
+      <BackgroundImage url="bg_team.png" description="PageTeam Background" />
+      <vstack
+        width="100%"
+        height="100%"
+        alignment="middle center"
+        gap="medium"
+      >
+        <vstack
+          gap="medium"
+          padding="medium"
+          cornerRadius="large"
+          backgroundColor="rgba(0, 0, 0, 0.8)"
+         >
+          <text size="xxlarge" color="white" alignment="middle center">🎯 Team 🎯</text>
+          <text size="small" weight="bold" color="white">Write in the comment: /join [profession].</text>
+          {Object.entries(teamMembers).map(([profession, player], index) => (
+            <text key={index.toString()} size="small" color="white">
+              {`${index + 1}️⃣ ${profession.toUpperCase()} - ${player}`}
+            </text>
+          ))}
+        </vstack>
+
+        <hstack gap="small">
           <button
             onPress={() => {
               interval.stop();
@@ -131,6 +140,6 @@ export const PageTeam = ({
           </button>
         </hstack>
       </vstack>
-    </vstack>
+    </zstack>
   );
 };
