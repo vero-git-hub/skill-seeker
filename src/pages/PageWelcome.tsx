@@ -4,7 +4,8 @@ import {PageProps} from '@utils/types.js';
 import {BackgroundImage} from "@components/Image.js";
 
 export const PageWelcome = ({
-  setPage,
+  gameState,
+  updateGameState,
   onShowLeaderboard,
 }: PageProps & {
   onShowLeaderboard: () => void;
@@ -31,7 +32,7 @@ export const PageWelcome = ({
         </vstack>
 
         <hstack gap="medium">
-          <button onPress={() => setPage('team')}>Go to Team ➡️</button>
+          <button onPress={() => updateGameState({page: 'team'})}>Go to Team ➡️</button>
           <button onPress={onShowLeaderboard}>🏆 Leaderboard</button>
         </hstack>
       </vstack>

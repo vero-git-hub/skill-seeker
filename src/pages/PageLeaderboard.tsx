@@ -5,9 +5,12 @@ import {getLeaderboard} from '@utils/leaderboard.js';
 import {BackgroundImage} from "@components/Image.js";
 
 export const PageLeaderboard = ({
-  setPage,
+  gameState,
+  updateGameState,
   devvitContext,
-}: PageProps & { devvitContext: Devvit.Context }) => {
+}: PageProps & {
+  devvitContext: Devvit.Context,
+}) => {
   const { data: leaderboard, loading, error } = useAsync(async () => {
     return await getLeaderboard(devvitContext);
   });
@@ -47,7 +50,11 @@ export const PageLeaderboard = ({
             !loading && <text color="white">No scores yet.</text>
           )}
         </vstack>
-        <button onPress={() => setPage('welcome')}>⬅️ Back</button>
+        <button onPress={() =>
+          updateGameState({page: 'welcome'})}
+        >
+          ⬅️ Back
+        </button>
       </vstack>
     </zstack>
   );

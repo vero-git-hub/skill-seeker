@@ -1,12 +1,10 @@
 // pages/PageDefeat.tsx
 import {Devvit} from '@devvit/public-api';
-import {PageProps} from '@utils/types.js';
 import {BackgroundImage} from "@components/Image.js";
 
 export const PageDefeat = ({
-  setPage,
   onRestart,
-}: PageProps & {
+}: {
   onRestart: () => void;
 }) => {
   return (

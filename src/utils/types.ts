@@ -1,6 +1,7 @@
 // utils/types.ts
 export type PageProps = {
-  setPage: (page: string) => void;
+  gameState: GameState;
+  updateGameState: (partial: Partial<GameState>) => void;
 }
 
 export type Question = {
@@ -8,4 +9,12 @@ export type Question = {
   answers: string[];
   correct: string;
   requiredSpecialist: string;
+};
+
+export type GameState = {
+  page: string;
+  teamMembers: Record<string, string>;
+  currentLevel: number;
+  selectedQuestions: Question[] | null;
+  specialists: string[];
 };

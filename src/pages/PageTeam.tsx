@@ -1,55 +1,25 @@
 // pages/PageTeam.tsx
 import {Devvit, useInterval, useState} from '@devvit/public-api';
-import {PageProps, Question} from '@utils/types.js';
-import {pickRandomQuestions} from '@utils/questions.js';
+import {PageProps} from '@utils/types.js';
 import {BackgroundImage} from "@components/Image.js";
 
 export const PageTeam = ({
-  setPage,
-  onInvite,
+  gameState,
+  updateGameState,
   reddit,
   postId,
-  teamMembers,
-  setTeamMembers,
+  onInvite,
   onRestart,
-  selectedQuestions,
-  setSelectedQuestions,
-  setSpecialists,
-  context
 }: PageProps & {
-  onInvite: () => void;
   reddit: any;
   postId: string;
-  teamMembers: Record<string, string>;
-  setTeamMembers: (
-    teamOrUpdater:
-      | Record<string, string>
-      | ((prev: Record<string, string>) => Record<string, string>)
-  ) => void;
+  onInvite: () => void;
   onRestart: () => void;
-  selectedQuestions: Question[] | null;
-  setSelectedQuestions: (q: Question[]) => void;
-  setSpecialists: (s: string[]) => void;
-  context: any;
 }) => {
+  const {teamMembers} = gameState;
+
   const [monitoring, setMonitoring] = useState(true);
   const [allJoined, setAllJoined] = useState(false);
-
-  if (!selectedQuestions) {
-    console.log("⚙️ Initializing game from PageTeam...");
-  
-    const newSet = pickRandomQuestions(5);
-    const newSpecs = [...new Set(newSet.map(q => q.requiredSpecialist))];
-  
-    context.realtime.send('question_set', newSet);
-    context.realtime.send('specialists_sync', newSpecs);
-  
-    setSelectedQuestions(newSet);
-    setSpecialists(newSpecs);
-    setTeamMembers(
-      Object.fromEntries(newSpecs.map(spec => [spec.toLowerCase(), "Waiting..."]))
-    );
-  }  
 
   const interval = useInterval(async () => {
       if (!monitoring) return;
@@ -81,7 +51,7 @@ export const PageTeam = ({
                 }
 
                 console.log(`✅ ${authorName} joined as ${profession}`);
-                setTeamMembers(updated);
+                updateGameState({ teamMembers: updated });
               } else {
                 console.log(`⚠️ ${profession} is already taken by ${teamMembers[profession]}`);
               }
@@ -132,7 +102,7 @@ export const PageTeam = ({
           <button
             onPress={() => {
               interval.stop();
-              setPage('challenge');
+              updateGameState({page: 'challenge'});
             }}
             disabled={!allJoined}
           >

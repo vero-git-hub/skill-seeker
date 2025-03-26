@@ -1,17 +1,15 @@
 // pages/PageVictory.tsx
 import {Devvit, useAsync} from '@devvit/public-api';
-import {PageProps} from '@utils/types.js';
 import {BackgroundImage} from "@components/Image.js";
 
 export const PageVictory = ({
-  setPage,
-  onRestart,
   devvitContext,
   teamMembers,
-}: PageProps & {
-  onRestart: () => void;
+  onRestart,
+}: {
   devvitContext: Devvit.Context;
   teamMembers: Record<string, string>;
+  onRestart: () => void;
 }) => {
   useAsync(async () => {
     const username = await devvitContext.reddit.getCurrentUsername();
@@ -32,7 +30,7 @@ export const PageVictory = ({
 
   return (
     <zstack height="100%" width="100%">
-          <BackgroundImage url="bg_victory.png" description="PageVictory Background" />
+      <BackgroundImage url="bg_victory.png" description="PageVictory Background" />
       <vstack
         width="100%"
         height="100%"
